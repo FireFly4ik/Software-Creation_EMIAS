@@ -1,0 +1,218 @@
+.container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100dvh;
+    background: #f5f7fa;
+    overflow: hidden;
+
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    position: relative;
+}
+
+.slidesWrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.slide {
+    position: absolute;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    padding: 0 20px;
+}
+
+.animationContainer {
+    width: 100%;
+    max-width: 280px;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.lottieAnimation {
+    width: 100%;
+    height: 100%;
+}
+
+/* Loader */
+.loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(76, 175, 80, 0.2);
+    border-top-color: #4CAF50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Placeholder если анимация не загрузилась */
+.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    backdrop-filter: blur(10px);
+    font-size: 80px;
+}
+
+.title {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    color: #222222;
+    margin: 0;
+    padding: 0 20px;
+    max-width: 400px;
+}
+
+.pagination {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0;
+    margin-bottom: 20px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.dot:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.dotActive {
+    background: #ffffff;
+    width: 24px;
+    border-radius: 4px;
+}
+
+.startButton {
+    width: 100%;
+    max-width: 400px;
+    padding: 16px 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #2c71cc;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    margin: 0 auto env(safe-area-inset-bottom, 0);
+    touch-action: manipulation;
+}
+
+.startButton:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+}
+
+.startButton:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+@media (max-height: 700px) {
+    .title {
+        font-size: 20px;
+    }
+
+    .animationContainer {
+        max-width: 200px;
+    }
+
+    .slide {
+        gap: 30px;
+    }
+}
+
+@media (max-height: 600px) {
+    .title {
+        font-size: 18px;
+    }
+
+    .animationContainer {
+        max-width: 160px;
+    }
+
+    .slide {
+        gap: 20px;
+    }
+
+    .startButton {
+        padding: 14px 20px;
+        font-size: 16px;
+    }
+}
+
+.container *,
+.container *::before,
+.container *::after {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.container button {
+    -webkit-tap-highlight-color: transparent;
+}
