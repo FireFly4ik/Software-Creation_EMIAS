@@ -6,7 +6,9 @@ import {
   FaEnvelope,
   FaPhone,
   FaCheckCircle,
-  FaUserShield
+  FaUserShield,
+  FaCalendar,
+  FaVenusMars
 } from 'react-icons/fa';
 import styles from './UserRegistrationForm.module.css';
 
@@ -17,17 +19,74 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
     middleName: '',
     email: '',
     phone: '',
+    birthDate: '',
+    gender: '',
   });
 
   const [agreedToNewsletter, setAgreedToNewsletter] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
+  // Валидация email
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
+  // Валидация телефона
+  const validatePhone = (phone) => {
+    if (!phone || phone.trim() === '') return true; // Телефон необязателен
+    const cleanPhone = phone.replace(/\D/g, '');
+    return cleanPhone.length === 11 && cleanPhone.startsWith('7');
+  };
+
+  // Форматирование телефона
+  const formatPhoneNumber = (value) => {
+    let cleaned = value.replace(/\D/g, '');
+
+    if (cleaned.startsWith('8')) {
+      cleaned = '7' + cleaned.slice(1);
+    }
+
+    if (cleaned.length > 0 && !cleaned.startsWith('7')) {
+      cleaned = '7' + cleaned;
+    }
+
+    cleaned = cleaned.slice(0, 11);
+
+    if (cleaned.length === 0) return '';
+
+    let formatted = '+7';
+
+    if (cleaned.length > 1) {
+      formatted += ' (' + cleaned.slice(1, 4);
+    }
+
+    if (cleaned.length >= 5) {
+      formatted += ') ' + cleaned.slice(4, 7);
+    }
+
+    if (cleaned.length >= 8) {
+      formatted += '-' + cleaned.slice(7, 9);
+    }
+
+    if (cleaned.length >= 10) {
+      formatted += '-' + cleaned.slice(9, 11);
+    }
+
+    return formatted;
+  };
+
+  // Валидация даты рождения
+  const validateBirthDate = (date) => {
+    if (!date) return false;
+    const selectedDate = new Date(date);
+    const today = new Date();
+    const age = today.getFullYear() - selectedDate.getFullYear();
+    return age >= 0 && age <= 150;
+  };
+
+  // Валидация формы
   const validateForm = () => {
     const newErrors = {};
 
@@ -45,9 +104,27 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
       newErrors.email = 'Некорректный email';
     }
 
+    if (!formData.birthDate.trim()) {
+      newErrors.birthDate = 'Обязательное поле';
+    } else if (!validateBirthDate(formData.birthDate)) {
+      newErrors.birthDate = 'Некорректная дата';
+    }
+
+    if (!formData.gender) {
+      newErrors.gender = 'Обязательное поле';
+    }
+
+    // Валидация телефона (если введён)
+    if (formData.phone && formData.phone.trim() !== '') {
+      if (!validatePhone(formData.phone)) {
+        newErrors.phone = 'Некорректный номер телефона';
+      }
+    }
+
     return newErrors;
   };
 
+  // Проверка заполненности обязательных полей
   const isFormValid = () => {
     const newErrors = validateForm();
     return Object.keys(newErrors).length === 0;
@@ -56,6 +133,7 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
+    // Убираем ошибку при начале ввода
     if (errors[field]) {
       setErrors(prev => {
         const updated = { ...prev };
@@ -63,6 +141,11 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
         return updated;
       });
     }
+  };
+
+  const handlePhoneChange = (value) => {
+    const formatted = formatPhoneNumber(value);
+    handleChange('phone', formatted);
   };
 
   const handleBlur = (field) => {
@@ -84,6 +167,9 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
         lastName: true,
         firstName: true,
         email: true,
+        birthDate: true,
+        gender: true,
+        phone: formData.phone ? true : false,
       });
       return;
     }
@@ -223,6 +309,67 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
             )}
           </div>
 
+          {/* Дата рождения */}
+          <div className={styles.field}>
+            <label className={styles.label}>
+              Дата рождения <span className={styles.required}>*</span>
+            </label>
+            <div className={styles.inputWrapper}>
+              <FaCalendar className={styles.inputIcon} />
+              <input
+                type="date"
+                value={formData.birthDate}
+                onChange={(e) => handleChange('birthDate', e.target.value)}
+                onBlur={() => handleBlur('birthDate')}
+                className={clsx(styles.input, styles.inputDate, {
+                  [styles.inputError]: touched.birthDate && errors.birthDate,
+                })}
+                max={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+            {touched.birthDate && errors.birthDate && (
+              <motion.span
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={styles.errorText}
+              >
+                {errors.birthDate}
+              </motion.span>
+            )}
+          </div>
+
+          {/* Пол */}
+          <div className={styles.field}>
+            <label className={styles.label}>
+              Пол <span className={styles.required}>*</span>
+            </label>
+            <div className={styles.inputWrapper}>
+              <FaVenusMars className={styles.inputIcon} />
+              <select
+                value={formData.gender}
+                onChange={(e) => handleChange('gender', e.target.value)}
+                onBlur={() => handleBlur('gender')}
+                className={clsx(styles.input, styles.select, {
+                  [styles.inputError]: touched.gender && errors.gender,
+                  [styles.selectPlaceholder]: !formData.gender,
+                })}
+              >
+                <option value="" disabled>Выберите пол</option>
+                <option value="Мужской">Мужской</option>
+                <option value="Женский">Женский</option>
+              </select>
+            </div>
+            {touched.gender && errors.gender && (
+              <motion.span
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={styles.errorText}
+              >
+                {errors.gender}
+              </motion.span>
+            )}
+          </div>
+
           {/* Телефон (необязательно) */}
           <div className={styles.field}>
             <label className={styles.label}>
@@ -233,11 +380,23 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
               <input
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => handleChange('phone', e.target.value)}
-                className={styles.input}
-                placeholder="+7 (999) 123-45-67"
+                onChange={(e) => handlePhoneChange(e.target.value)}
+                onBlur={() => handleBlur('phone')}
+                className={clsx(styles.input, {
+                  [styles.inputError]: touched.phone && errors.phone,
+                })}
+                placeholder="+7 (999) 999-99-99"
               />
             </div>
+            {touched.phone && errors.phone && (
+              <motion.span
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={styles.errorText}
+              >
+                {errors.phone}
+              </motion.span>
+            )}
           </div>
 
           {/* Чекбокс рассылки */}
