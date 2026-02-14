@@ -1,0 +1,341 @@
+.container {
+    min-height: 100dvh;
+    background: #F5F7FA;
+    display: flex;
+    flex-direction: column;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 100px);
+    overflow-y: auto;
+}
+
+.header {
+    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+    padding: 16px 16px;
+    padding-top: calc(32px + env(safe-area-inset-top));
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.doctorInfo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.doctorIconWrapper {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    flex-shrink: 0;
+}
+
+.doctorIcon {
+    width: 28px;
+    height: 28px;
+    color: #FFFFFF;
+}
+
+.doctorName {
+    font-size: 20px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0 0 4px 0;
+    line-height: 1.2;
+}
+
+.doctorSpecialty {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.dateSection,
+.timeSection {
+    padding: 20px 16px;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.sectionIcon {
+    width: 18px;
+    height: 18px;
+    color: #2563EB;
+}
+
+.sectionTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1A1A1A;
+    margin: 0;
+}
+
+.datesScroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+.datesScroll::-webkit-scrollbar {
+    height: 4px;
+}
+
+.datesScroll::-webkit-scrollbar-track {
+    background: #E5E7EB;
+    border-radius: 2px;
+}
+
+.datesScroll::-webkit-scrollbar-thumb {
+    background: #2563EB;
+    border-radius: 2px;
+}
+
+.dateCard {
+    min-width: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 10px;
+    background: #FFFFFF;
+    border: 2px solid #E3E8EF;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    scroll-snap-align: start;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.dateCard:hover {
+    border-color: #2563EB;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.dateCardActive {
+    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+    border-color: #2563EB;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.dateDayName {
+    font-size: 10px;
+    font-weight: 600;
+    color: #6B7280;
+    text-transform: capitalize;
+}
+
+.dateCardActive .dateDayName {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.dateDay {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1A1A1A;
+}
+
+.dateCardActive .dateDay {
+    color: #FFFFFF;
+}
+
+.dateMonth {
+    font-size: 11px;
+    font-weight: 500;
+    color: #6B7280;
+    text-transform: capitalize;
+}
+
+.dateCardActive .dateMonth {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.timeSlotsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 12px;
+}
+
+.timeSlot {
+    padding: 14px 12px;
+    background: #FFFFFF;
+    border: 2px solid #E3E8EF;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1A1A1A;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.timeSlot:hover {
+    border-color: #2563EB;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.timeSlotActive {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    border-color: #10B981;
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.timeSlotBooked {
+    background: #F3F4F6;
+    border-color: #E5E7EB;
+    color: #9CA3AF;
+    cursor: not-allowed;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.timeSlotBooked:hover {
+    border-color: #E5E7EB;
+    box-shadow: none;
+}
+
+.confirmSection {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    background: #FFFFFF;
+    border-top: 1px solid #E3E8EF;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 50;
+}
+
+.confirmButton {
+    width: 100%;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #FFFFFF;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.confirmButton:hover {
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    transform: translateY(-2px);
+}
+
+.confirmButton:active {
+    transform: translateY(0);
+}
+
+.backButton {
+    position: fixed;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+    transition: all 0.3s ease;
+    z-index: 100;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.backButton:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.5);
+}
+
+.backButton:active {
+    transform: translateY(-2px) scale(0.95);
+}
+
+.backIcon {
+    width: 24px;
+    height: 24px;
+    color: #FFFFFF;
+}
+
+@media (max-width: 360px) {
+    .doctorName {
+        font-size: 18px;
+    }
+
+    .sectionTitle {
+        font-size: 16px;
+    }
+
+    .sectionIcon {
+        width: 16px;
+        height: 16px;
+    }
+
+    .timeSlotsGrid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 10px;
+    }
+
+    .timeSlot {
+        padding: 12px 10px;
+        font-size: 14px;
+    }
+
+    .dateCard {
+        min-width: 65px;
+        padding: 10px 8px;
+    }
+
+    .dateDay {
+        font-size: 18px;
+    }
+
+    .backButton {
+        width: 52px;
+        height: 52px;
+        bottom: calc(20px + env(safe-area-inset-bottom));
+        right: 20px;
+    }
+}
+
+.container:has(.confirmSection) .backButton {
+    bottom: calc(100px + env(safe-area-inset-bottom));
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.backButton {
+    animation: fadeInUp 0.4s ease;
+}
