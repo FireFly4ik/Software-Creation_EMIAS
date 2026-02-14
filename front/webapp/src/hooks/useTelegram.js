@@ -7,6 +7,7 @@ export function useTelegram() {
     tg,
     onClose,
     username: tg.initDataUnsafe?.user?.username || 'User',
-    photo: tg.initDataUnsafe?.user?.photo_url || null
+    photo: tg.initDataUnsafe?.user?.photo_url || null,
+    id: tg.initDataUnsafe?.user?.id || ''
   }
-};
+}
