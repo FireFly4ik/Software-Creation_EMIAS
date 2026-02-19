@@ -1,0 +1,282 @@
+.container {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: #F5F7FA;
+    display: flex;
+    flex-direction: column;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Шапка */
+.header {
+    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+    padding: 20px 16px;
+    padding-top: calc(20px + env(safe-area-inset-top));
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.headerContent {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.headerIcon {
+    width: 28px;
+    height: 28px;
+    color: #FFFFFF;
+}
+
+.title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* Контент */
+.content {
+    flex: 1;
+    padding: 20px 16px;
+    overflow-y: auto;
+}
+
+/* Форма */
+.form {
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.required {
+    color: #EF4444;
+    font-weight: 700;
+}
+
+.optional {
+    color: #9CA3AF;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.input,
+.select {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    color: #1A1A1A;
+    background: #FFFFFF;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.input:focus,
+.select:focus {
+    border-color: #2563EB;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%236B7280' d='M4.427 6.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 6H4.604a.25.25 0 00-.177.427z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    cursor: pointer;
+    padding-right: 48px;
+}
+
+.selectPlaceholder {
+    color: #9CA3AF;
+}
+
+.inputError {
+    border-color: #EF4444 !important;
+    background: #FEF2F2 !important;
+}
+
+.inputError:focus {
+    border-color: #EF4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.errorText {
+    font-size: 12px;
+    color: #EF4444;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+/* Карточка предпросмотра */
+.previewCard {
+    padding: 16px;
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    border: 2px solid #93C5FD;
+    border-radius: 12px;
+    margin-top: 8px;
+}
+
+.previewLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1E40AF;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.previewValue {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1E3A8A;
+    line-height: 1.4;
+}
+
+/* Кнопка отправки */
+.submitButton {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 24px;
+    margin-top: 12px;
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.submitButton:hover {
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    transform: translateY(-2px);
+}
+
+.submitButton:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.buttonDisabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+}
+
+.buttonDisabled:hover {
+    transform: none !important;
+}
+
+.buttonIcon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Плавающая кнопка возврата */
+.backButton {
+    position: fixed;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+    transition: all 0.3s ease;
+    z-index: 100;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.backButton:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.5);
+}
+
+.backButton:active {
+    transform: translateY(-2px) scale(0.95);
+}
+
+.backIcon {
+    width: 24px;
+    height: 24px;
+    color: #FFFFFF;
+}
+
+/* Адаптив */
+@media (max-width: 360px) {
+    .title {
+        font-size: 18px;
+    }
+
+    .input,
+    .select {
+        padding: 10px 14px;
+        font-size: 15px;
+    }
+
+    .submitButton {
+        padding: 14px 20px;
+        font-size: 15px;
+    }
+
+    .previewCard {
+        padding: 14px;
+    }
+
+    .previewValue {
+        font-size: 14px;
+    }
+
+    .backButton {
+        width: 52px;
+        height: 52px;
+        bottom: calc(20px + env(safe-area-inset-bottom));
+        right: 20px;
+    }
+}
+
+/* Скроллбар */
+.content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.content::-webkit-scrollbar-track {
+    background: #F5F7FA;
+}
+
+.content::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 3px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+}

@@ -691,3 +691,54 @@
         height: 18px;
     }
 }
+.adminSection {
+    padding: 16px;
+    padding-top: 0;
+}
+
+.addDoctorButton {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    margin-bottom: 16px;
+}
+
+.addDoctorButton:hover {
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    transform: translateY(-2px);
+}
+
+.addDoctorButton:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.addDoctorIcon {
+    width: 20px;
+    height: 20px;
+}
+
+@media (max-width: 360px) {
+    .addDoctorButton {
+        font-size: 15px;
+        padding: 14px 20px;
+    }
+
+    .addDoctorIcon {
+        width: 18px;
+        height: 18px;
+    }
+}

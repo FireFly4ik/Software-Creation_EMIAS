@@ -23,18 +23,45 @@ import {
   FaEdit,
   FaSave,
   FaTimes,
-  FaUserShield
+  FaUserShield,
+  FaPlus
 } from 'react-icons/fa';
 import DoctorList from '../components/DoctorList';
 import styles from './MainPage.module.css';
 import DoctorSelectionPage from "./DoctorSelectionPage";
 import DoctorSchedulePage from './DoctorSchedulePage';
-import {ALL_DOCTORS} from "../test_data";
+import AddDoctorPage from './AddDoctorPage';
+import { ALL_DOCTORS } from "../test_data";
+import useApi from '../hooks/useApi';
 
 const statusColors = {
   'Запланировано': '#2196F3',
   'Завершено': '#4CAF50',
+  'Отменено': '#FF5252'
 }
+const formatAppointmentDateTime = (dateString) => {
+  if (!dateString) return { date: '—', time: '' };
+
+  // Парсим дату в формате "YYYY-MM-DD HH:MM:SS"
+  const date = new Date(dateString);
+
+  // Форматируем дату как "ДД.ММ.ГГГГ"
+  const formattedDate = date.toLocaleDateString('ru-RU');
+
+  // Форматируем время как "HH:MM"
+  const formattedTime = date.toLocaleTimeString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  return { date: formattedDate, time: formattedTime };
+};
+
+// Функция для получения врача по ID (с проверкой на существование)
+const getDoctorById = (doctorId) => {
+  const doctor = ALL_DOCTORS.find(d => d.id === doctorId);
+  return doctor || null;
+};
 
 const DOCTORS_DATA = [
   {
@@ -54,7 +81,7 @@ const DOCTORS_DATA = [
   },
 ];
 
-const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, appointments, onAppointmentAdd, onRoleChange }) => {
+const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, appointments, onAppointmentAdd, onRoleChange }) => {
   const [activeTab, setActiveTab] = useState('profile');
   const [direction, setDirection] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
@@ -63,6 +90,12 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
   const [touched, setTouched] = useState({});
   const [selectedSpecialty, setSelectedSpecialty] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [isAddingDoctor, setIsAddingDoctor] = useState(false);
+
+  const [doctors, setDoctors] = useState([]);
+  const [loadingDoctors, setLoadingDoctors] = useState(false);
+
+  const api = useApi();
 
   useEffect(() => {
     if (PROFILE_DATA) {
@@ -70,19 +103,79 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
     }
   }, [PROFILE_DATA]);
 
-  const handleToggleAdmin = () => {
+  // ✅ Загружаем врачей при монтировании компонента
+  useEffect(() => {
+    loadDoctors();
+  }, []);
+
+  // ✅ Добавляем функцию загрузки врачей
+  const loadDoctors = async () => {
+    try {
+      setLoadingDoctors(true);
+      const doctorsData = await api.getDoctors();
+      setDoctors(doctorsData);
+      console.log('Врачи загружены:', doctorsData);
+    } catch (error) {
+      console.error('Ошибка загрузки врачей:', error);
+    } finally {
+      setLoadingDoctors(false);
+    }
+  };
+  const handleToggleAdmin = async () => {
     const isAdmin = PROFILE_DATA?.role === 'admin';
 
     if (isAdmin) {
       const confirmed = window.confirm('Вы уверены, что хотите снять роль администратора?');
-      if (confirmed) {
+      if (!confirmed) return;
+
+      try {
+        await api.stopBeingAdmin();
+        console.log('Роль администратора снята');
         onRoleChange?.('user');
+        alert('Вы больше не администратор');
+      } catch (error) {
+        console.error('Ошибка при снятии роли:', error);
+        alert(`Ошибка: ${error.message}`);
       }
     } else {
       const confirmed = window.confirm('Вы уверены, что хотите стать администратором?');
-      if (confirmed) {
+      if (!confirmed) return;
+
+      try {
+        await api.becomeAdmin();
+        console.log('Роль администратора получена');
         onRoleChange?.('admin');
+        alert('Теперь вы администратор!');
+      } catch (error) {
+        console.error('Ошибка при получении роли:', error);
+        alert(`Ошибка: ${error.message}`);
       }
+    }
+  };
+
+  const handleAddDoctorClick = () => {
+    setIsAddingDoctor(true);
+  };
+
+  const handleBackFromAddDoctor = () => {
+    setIsAddingDoctor(false);
+  };
+
+  const handleSaveDoctor = async (newDoctorData) => {
+    try {
+      console.log('Создание врача через API:', newDoctorData);
+
+      const createdDoctor = await api.createDoctor(newDoctorData);
+      console.log('Врач успешно создан:', createdDoctor);
+
+      // Перезагружаем список врачей
+      await loadDoctors();
+
+      setIsAddingDoctor(false);
+      alert('Врач успешно добавлен!');
+    } catch (error) {
+      console.error('Ошибка создания врача:', error);
+      alert(`Ошибка при добавлении врача: ${error.message}`);
     }
   };
 
@@ -189,8 +282,15 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
 
   const handleAppointmentClick = (appointment) => {
     console.log('Запись:', appointment);
-  };
 
+    // Показываем диалог с опцией отмены
+    if (appointment.status === 'Запланировано') {
+      const action = window.confirm('Хотите отменить эту запись?');
+      if (action) {
+        handleCancelAppointment(appointment.id);
+      }
+    }
+  };
   const handleDoctorClick = (doctor) => {
     console.log('Врач/Специальность:', doctor.name);
     setSelectedSpecialty({
@@ -218,7 +318,6 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
     setActiveTab('profile');
   };
 
-  // Обработчик успешного бронирования
   const handleAppointmentBooked = (appointmentData) => {
     console.log('Новая запись добавлена:', appointmentData);
     onAppointmentAdd?.(appointmentData);
@@ -259,7 +358,8 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
     setIsEditing(false);
   };
 
-  const handleSaveEdit = () => {
+  // ✅ Обновляем функцию сохранения профиля
+  const handleSaveEdit = async () => {
     const newErrors = validateForm();
 
     if (Object.keys(newErrors).length > 0) {
@@ -275,12 +375,36 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
       return;
     }
 
-    console.log('Сохранение профиля:', editedProfile);
-    onProfileUpdate?.(editedProfile);
-    setErrors({});
-    setTouched({});
-    setIsEditing(false);
+    try {
+      console.log('Обновление профиля через API:', editedProfile);
+
+      // Формируем данные для API (убираем лишние поля если нужно)
+      const updateData = {
+        first_name: editedProfile.firstName,
+        surname: editedProfile.lastName,
+        middle_name: editedProfile.middleName || '',
+        phone: editedProfile.phone || '',
+        email: editedProfile.email,
+        birth_date: editedProfile.birthDate,
+        gender: editedProfile.gender,
+      };
+
+      await api.updateProfile(updateData);
+      console.log('Профиль успешно обновлён');
+
+      // Вызываем callback для обновления данных в родительском компоненте
+      onProfileUpdate?.(editedProfile);
+
+      setErrors({});
+      setTouched({});
+      setIsEditing(false);
+      alert('Профиль успешно обновлён!');
+    } catch (error) {
+      console.error('Ошибка обновления профиля:', error);
+      alert(`Ошибка при обновлении профиля: ${error.message}`);
+    }
   };
+
 
   const handleInputChange = (field, value) => {
     setEditedProfile(prev => ({ ...prev, [field]: value }));
@@ -293,6 +417,26 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
       });
     }
   };
+
+  // ✅ Добавляем функцию отмены записи
+  const handleCancelAppointment = async (appointmentId) => {
+    const confirmed = window.confirm('Вы уверены, что хотите отменить запись?');
+    if (!confirmed) return;
+
+    try {
+      console.log('Отмена записи:', appointmentId);
+      await api.cancelMyAppointment(appointmentId);
+      alert('Запись успешно отменена');
+
+      // Здесь нужно обновить список записей
+      // Вызываем callback или перезагружаем данные
+    } catch (error) {
+      console.error('Ошибка отмены записи:', error);
+      alert(`Ошибка при отмене записи: ${error.message}`);
+    }
+  };
+
+
   const formatDoctorName = (doctor) => {
     const firstInitial = doctor.firstName ? doctor.firstName.charAt(0) + '.' : '';
     const middleInitial = doctor.middleName ? doctor.middleName.charAt(0) + '.' : '';
@@ -334,6 +478,16 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
     }),
   };
 
+  // Если открыта страница добавления врача
+  if (isAddingDoctor) {
+    return (
+      <AddDoctorPage
+        onBack={handleBackFromAddDoctor}
+        onSave={handleSaveDoctor}
+      />
+    );
+  }
+
   if (selectedDoctor && activeTab === 'doctor') {
     return (
       <DoctorSchedulePage
@@ -342,6 +496,7 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
         isAuthorized={isAutorized}
         onNeedAuth={handleNeedAuth}
         onAppointmentBooked={handleAppointmentBooked}
+        userId={PROFILE_DATA?.id}
       />
     );
   }
@@ -349,10 +504,13 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
   if (selectedSpecialty && activeTab === 'doctor') {
     return (
       <DoctorSelectionPage
+        userRole={userRole}
         specialtyId={selectedSpecialty.id}
         specialtyName={selectedSpecialty.name}
         onBack={handleBackFromDoctorSelection}
         onDoctorSelect={handleDoctorSelect}
+        allDoctors={doctors}           // ✅ Передаём список врачей
+        loading={loadingDoctors}       // ✅ Передаём состояние загрузки
       />
     );
   }
@@ -726,35 +884,50 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
                     <h2 className={styles.sectionTitle}>История записей</h2>
                     {appointments && appointments.length > 0 ? (
                       <div className={styles.historyList}>
-                        {appointments.map((appointment) => (
-                          <motion.button
-                            key={appointment.id}
-                            className={styles.historyCard}
-                            onClick={() => handleAppointmentClick(appointment)}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                          >
-                            <div className={styles.historyContent}>
-                              <div className={styles.historyDateTime}>
-                                <span className={styles.historyDate}>{appointment.date}</span>
-                                {appointment.time && (
-                                  <span className={styles.historyTime}>{appointment.time}</span>
-                                )}
+                        {appointments.map((appointment) => {
+                          const doctor = getDoctorById(appointment.doctor_id);
+                          const { date, time } = formatAppointmentDateTime(appointment.date);
+
+                          // Если врач не найден, пропускаем эту запись
+                          if (!doctor) {
+                            console.warn('Врач не найден для записи:', appointment);
+                            return null;
+                          }
+
+                          return (
+                            <motion.button
+                              key={appointment.id}
+                              className={styles.historyCard}
+                              onClick={() => handleAppointmentClick(appointment)}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                            >
+                              <div className={styles.historyContent}>
+                                <div className={styles.historyDateTime}>
+                                  <span className={styles.historyDate}>{date}</span>
+                                  {time && (
+                                    <span className={styles.historyTime}>{time}</span>
+                                  )}
+                                </div>
+                                <div className={styles.historyService}>
+                                  {formatDoctorName(doctor)}
+                                </div>
+                                <div className={styles.historyService}>
+                                  {doctor.desc}
+                                </div>
+                                <div
+                                  className={styles.historyStatus}
+                                  style={{ color: statusColors[appointment.status] || '#6B7280' }}
+                                >
+                                  {appointment.status}
+                                </div>
                               </div>
-                              <div className={styles.historyService}>{formatDoctorName(ALL_DOCTORS.find(d => d.id === appointment.doctorId))}</div>
-                              <div className={styles.historyService}>{ALL_DOCTORS.find(d => d.id === appointment.doctorId).desc}</div>
-                              <div
-                                className={styles.historyStatus}
-                                style={{ color: statusColors[appointment.status] }}
-                              >
-                                {appointment.status}
-                              </div>
-                            </div>
-                            <FaChevronRight className={styles.historyArrow} />
-                          </motion.button>
-                        ))}
+                              <FaChevronRight className={styles.historyArrow} />
+                            </motion.button>
+                          );
+                        })}
                       </div>
                     ) : (
                       <motion.div
@@ -804,6 +977,21 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
               onDragEnd={handleDragEnd}
               className={styles.tabContent}
             >
+              {userRole === 'admin' && (
+                <div className={styles.adminSection}>
+                  <motion.button
+                    className={styles.addDoctorButton}
+                    onClick={handleAddDoctorClick}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <FaPlus className={styles.addDoctorIcon} />
+                    Добавить врача
+                  </motion.button>
+                </div>
+              )}
               <DoctorList
                 categories={DOCTORS_DATA}
                 onDoctorClick={handleDoctorClick}

@@ -1,5 +1,5 @@
 
-/*
+
 export const userData = {
   id: 123123123,
   lastName: 'Змеев',
@@ -10,8 +10,21 @@ export const userData = {
   birthDate: '2000-01-15',
   gender: 'Мужской',
   role: 'user', // 'guest', 'user', 'admin'
-};*/
-export const userData = undefined
+};
+//export const userData = undefined
+
+export const SPECIALTIES = [
+  { id: 'covid-doctor', name: 'Дежурный врач ОРВИ' },
+  { id: 'district-doctor', name: 'Участковый врач' },
+  { id: 'therapist', name: 'Терапевт' },
+  { id: 'certificates', name: 'Кабинет выдачи справок и направлений' },
+  { id: 'surgeon', name: 'Хирург' },
+  { id: 'ophthalmologist', name: 'Офтальмолог' },
+  { id: 'otorhinolaryngologist', name: 'Оториноларинголог' },
+  { id: 'urologist', name: 'Уролог' },
+  { id: 'dispensary', name: 'Диспансеризация/Профилактический осмотр' },
+  { id: 'vaccination', name: 'Кабинет вакцинации' },
+];
 
 export const ALL_DOCTORS = [
   { id: 1, lastName: 'Петров', firstName: 'Алексей', middleName: 'Сергеевич', desc: 'Дежурный врач ОРВИ', specialty: 'covid-doctor' },

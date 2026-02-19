@@ -20,8 +20,13 @@ app.add_exception_handler(Exception, exception_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://tetrasyllabical-unestablishable-betsey.ngrok-free.dev",
+        "http://localhost:3000",
+        "http://localhost",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Set-Cookie"],  # ВАЖНО!
 )

@@ -2,48 +2,53 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaArrowLeft, FaUserMd, FaChevronRight } from 'react-icons/fa';
 import styles from './DoctorSelectionPage.module.css';
-import {ALL_DOCTORS} from "../test_data";
 
-// const ALL_DOCTORS = [
-//   { id: 1, lastName: 'Петров', firstName: 'Алексей', middleName: 'Сергеевич', desc: 'Дежурный врач ОРВИ', specialty: 'covid-doctor' },
-//   { id: 2, lastName: 'Сидорова', firstName: 'Мария', middleName: 'Ивановна', desc: 'Дежурный врач ОРВИ', specialty: 'covid-doctor' },
-//   { id: 3, lastName: 'Иванов', firstName: 'Иван', middleName: 'Иванович', desc: 'Терапевт', specialty: 'therapist' },
-//   { id: 4, lastName: 'Кузнецова', firstName: 'Анна', middleName: 'Петровна', desc: 'Терапевт', specialty: 'therapist' },
-//   { id: 5, lastName: 'Смирнов', firstName: 'Дмитрий', middleName: 'Александрович', desc: 'Терапевт', specialty: 'therapist' },
-//   { id: 6, lastName: 'Волкова', firstName: 'Елена', middleName: 'Викторовна', desc: 'Участковый врач', specialty: 'district-doctor' },
-//   { id: 7, lastName: 'Морозов', firstName: 'Сергей', middleName: 'Николаевич', desc: 'Участковый врач', specialty: 'district-doctor' },
-//   { id: 8, lastName: 'Соколов', firstName: 'Михаил', middleName: 'Владимирович', desc: 'Хирург', specialty: 'surgeon' },
-//   { id: 9, lastName: 'Новикова', firstName: 'Ольга', middleName: 'Андреевна', desc: 'Хирург', specialty: 'surgeon' },
-//   { id: 10, lastName: 'Лебедев', firstName: 'Константин', middleName: 'Юрьевич', desc: 'Офтальмолог', specialty: 'ophthalmologist' },
-//   { id: 11, lastName: 'Павлова', firstName: 'Татьяна', middleName: 'Сергеевна', desc: 'Оториноларинголог', specialty: 'otorhinolaryngologist' },
-//   { id: 12, lastName: 'Федоров', firstName: 'Андрей', middleName: 'Павлович', desc: 'Уролог', specialty: 'urologist' },
-//   { id: 13, lastName: 'Егорова', firstName: 'Наталья', middleName: 'Владимировна', desc: 'Выдача справок и направлений', specialty: 'certificates' },
-//   { id: 14, lastName: 'Козлов', firstName: 'Владислав', middleName: 'Игоревич', desc: 'Диспансеризация', specialty: 'dispensary' },
-//   { id: 15, lastName: 'Романова', firstName: 'Светлана', middleName: 'Дмитриевна', desc: 'Диспансеризация', specialty: 'dispensary' },
-//   { id: 16, lastName: 'Зайцева', firstName: 'Ирина', middleName: 'Алексеевна', desc: 'Вакцинация', specialty: 'vaccination' },
-// ];
+// Маппинг specialtyId к значениям Enum бэкенда
+const SPECIALTY_MAPPING = {
+  'covid-doctor': 'Дежурный врач ОРВИ',
+  'district-doctor': 'Участковый врач',
+  'therapist': 'Терапевт',
+  'certificates': 'Кабинет выдачи справок и направлений',
+  'surgeon': 'Хирург',
+  'ophthalmologist': 'Офтальмолог',
+  'otorhinolaryngologist': 'Оториноларинголог',
+  'urologist': 'Уролог',
+  'dispensary': 'Диспансеризация/Профилактический осмотр',
+  'vaccination': 'Кабинет вакцинации',
+};
 
-const DoctorSelectionPage = ({ specialtyId, specialtyName, onBack, onDoctorSelect }) => {
-  const [doctors, setDoctors] = useState([]);
+const DoctorSelectionPage = ({
+                               specialtyId,
+                               specialtyName,
+                               onBack,
+                               onDoctorSelect,
+                               allDoctors = [],  // ✅ Получаем врачей из MainPage
+                               loading = false   // ✅ Получаем состояние загрузки
+                             }) => {
+  const [filteredDoctors, setFilteredDoctors] = useState([]);
 
   useEffect(() => {
-    const filteredDoctors = ALL_DOCTORS.filter(doctor => doctor.specialty === specialtyId);
-    setDoctors(filteredDoctors);
+    // ✅ Фильтруем врачей по специализации
+    const specializationValue = SPECIALTY_MAPPING[specialtyId];
+    const filtered = allDoctors.filter(
+      doctor => doctor.specialization === specializationValue
+    );
 
-    // TODO: В реальности это будет запрос к бэкенду
-    // const fetchDoctors = async () => {
-    //   const response = await fetch(`/api/doctors?specialty=${specialtyId}`);
-    //   const data = await response.json();
-    //   setDoctors(data);
-    // };
-    // fetchDoctors();
-  }, [specialtyId]);
+    console.log('[DoctorSelection] Фильтрация врачей:', {
+      specialtyId,
+      specializationValue,
+      allDoctors: allDoctors.length,
+      filtered: filtered.length
+    });
+
+    setFilteredDoctors(filtered);
+  }, [specialtyId, allDoctors]);
 
   // Функция для форматирования ФИО в "Фамилия И. О."
   const formatDoctorName = (doctor) => {
-    const firstInitial = doctor.firstName ? doctor.firstName.charAt(0) + '.' : '';
-    const middleInitial = doctor.middleName ? doctor.middleName.charAt(0) + '.' : '';
-    return `${doctor.lastName} ${firstInitial} ${middleInitial}`;
+    const firstInitial = doctor.first_name ? doctor.first_name.charAt(0) + '.' : '';
+    const middleInitial = doctor.middle_name ? doctor.middle_name.charAt(0) + '.' : '';
+    return `${doctor.surname} ${firstInitial} ${middleInitial}`;
   };
 
   const handleDoctorClick = (doctor) => {
@@ -60,7 +65,16 @@ const DoctorSelectionPage = ({ specialtyId, specialtyName, onBack, onDoctorSelec
 
       {/* Список врачей */}
       <div className={styles.content}>
-        {doctors.length === 0 ? (
+        {loading ? (
+          <motion.div
+            className={styles.emptyState}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <FaUserMd className={styles.emptyIcon} />
+            <p className={styles.emptyText}>Загрузка врачей...</p>
+          </motion.div>
+        ) : filteredDoctors.length === 0 ? (
           <motion.div
             className={styles.emptyState}
             initial={{ opacity: 0, y: 20 }}
@@ -71,7 +85,7 @@ const DoctorSelectionPage = ({ specialtyId, specialtyName, onBack, onDoctorSelec
           </motion.div>
         ) : (
           <div className={styles.doctorsList}>
-            {doctors.map((doctor, index) => (
+            {filteredDoctors.map((doctor, index) => (
               <motion.button
                 key={doctor.id}
                 className={styles.doctorCard}
@@ -87,7 +101,7 @@ const DoctorSelectionPage = ({ specialtyId, specialtyName, onBack, onDoctorSelec
                 </div>
                 <div className={styles.doctorInfo}>
                   <span className={styles.doctorName}>{formatDoctorName(doctor)}</span>
-                  <span className={styles.doctorSpecialty}>{doctor.desc}</span>
+                  <span className={styles.doctorSpecialty}>{doctor.description}</span>
                 </div>
                 <FaChevronRight className={styles.chevronIcon} />
               </motion.button>

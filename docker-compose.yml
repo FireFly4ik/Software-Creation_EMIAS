@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  
+  db:
+    image: postgres:17-alpine
+    container_name: clinic_db
+    expose:
+      - "5432"
+    ports:
+      - "15432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-clinic}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - clinic-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./back
+      dockerfile: Dockerfile
+    container_name: clinic_backend
+    expose:
+      - "8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./back/.env
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-clinic}"
+    networks:
+      - clinic-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: /api
+    container_name: clinic_frontend
+    expose:
+      - "80"
+    depends_on:
+      - backend
+    networks:
+      - clinic-network
+    restart: unless-stopped
+
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    expose:
+      - "80"
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - clinic-network
+    restart: unless-stopped
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok
+    command:
+      - "http"
+      - "http://nginx-proxy:80"
+      - "--authtoken=${NGROK_AUTHTOKEN}"
+    ports:
+      - "4040:4040"
+    networks:
+      - clinic-network
+    depends_on:
+      - nginx-proxy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  clinic-network:
+    driver: bridge

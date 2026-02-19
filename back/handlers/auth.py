@@ -24,41 +24,40 @@ security = HTTPBearer(auto_error=True)
 #   -d ''
 
 
-@router.post(
-    "/telegram",
-    description="сюда шлем initdata, юзаем только как фолбэк если /refresh нас послал",
-)
+@router.post("/telegram")
 async def login(
-    response: Response,
-    credentials: Annotated[HTTPAuthorizationCredentials, Security(security)],
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+        response: Response,
+        credentials: Annotated[HTTPAuthorizationCredentials, Security(security)],
+        auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> dict:
-
     scheme = (credentials.scheme or "").lower()
     if scheme not in ("tma", "bearer"):
         raise HTTPException(status_code=401, detail="Invalid scheme")
 
     init_data = credentials.credentials
-
     access_token, refresh_token = await auth_service.login_via_telegram(init_data)
 
-    response.set_cookie(
-        key="user_refresh_token",
-        value=refresh_token,
-        httponly=True,
-        secure=True,
-        samesite="lax",
-    )
+    # Для ngrok (HTTPS) нужны secure=True и samesite="none"
     response.set_cookie(
         key="user_access_token",
         value=access_token,
         httponly=False,
-        secure=False,
-        samesite="lax",
+        secure=True,  # ВАЖНО! ngrok использует HTTPS
+        samesite="none",  # ВАЖНО! для работы через ngrok
+        path="/",
+        max_age=1800,  # 30 минут
     )
+    response.set_cookie(
+        key="user_refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=True,  # ВАЖНО! ngrok использует HTTPS
+        samesite="none",  # ВАЖНО! для работы через ngrok
+        path="/",
+        max_age=604800,  # 7 дней
+    )
+
     return {"msg": "ok"}
-
-
 @router.post(
     "/verify",
     description="шлем поля пол возраст итд, получаем роль юзера и новый access с этой ролью",
