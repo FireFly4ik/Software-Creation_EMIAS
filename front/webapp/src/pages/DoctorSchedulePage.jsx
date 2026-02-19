@@ -3,34 +3,35 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaArrowLeft, FaUserMd, FaCalendarAlt, FaClock } from 'react-icons/fa';
 import clsx from 'clsx';
 import styles from './DoctorSchedulePage.module.css';
+import {DOCTOR_SCHEDULES} from "../test_data";
 
 // Глобальное хранилище забронированных слотов
 let GLOBAL_BOOKED_SLOTS = {};
 
-const DOCTOR_SCHEDULES = {
-  1: {
-    '2025-02-20': [1, 8, 9, 13, 20],
-    '2025-02-21': [0, 5, 10, 15, 25],
-    '2025-02-22': [2, 7, 12, 18, 23],
-  },
-  2: {
-    '2025-02-20': [3, 6, 11, 16, 21],
-    '2025-02-21': [1, 4, 9, 14, 19],
-  },
-  3: {
-    '2025-02-20': [3, 6, 11, 16, 21],
-    '2025-02-21': [1, 4, 9, 14, 19],
-    '2025-02-24': [0, 5, 10, 15, 20, 25],
-  },
-  4: {
-    '2025-02-20': [2, 5, 8, 12, 17],
-    '2025-02-22': [0, 6, 11, 16, 22],
-  },
-  5: {
-    '2025-02-21': [4, 7, 10, 14, 19, 24],
-    '2025-02-23': [1, 6, 11, 16, 21],
-  },
-};
+// const DOCTOR_SCHEDULES = {
+//   1: {
+//     '2025-02-20': [1, 8, 9, 13, 20],
+//     '2025-02-21': [0, 5, 10, 15, 25],
+//     '2025-02-22': [2, 7, 12, 18, 23],
+//   },
+//   2: {
+//     '2025-02-20': [3, 6, 11, 16, 21],
+//     '2025-02-21': [1, 4, 9, 14, 19],
+//   },
+//   3: {
+//     '2025-02-20': [3, 6, 11, 16, 21],
+//     '2025-02-21': [1, 4, 9, 14, 19],
+//     '2025-02-24': [0, 5, 10, 15, 20, 25],
+//   },
+//   4: {
+//     '2025-02-20': [2, 5, 8, 12, 17],
+//     '2025-02-22': [0, 6, 11, 16, 22],
+//   },
+//   5: {
+//     '2025-02-21': [4, 7, 10, 14, 19, 24],
+//     '2025-02-23': [1, 6, 11, 16, 21],
+//   },
+// };
 
 // Генерация доступных дней
 const generateAvailableDays = () => {
@@ -104,6 +105,7 @@ const DoctorSchedulePage = ({ doctor, onBack, isAuthorized, onNeedAuth, onAppoin
     setSelectedTime(slot);
   };
 
+  //TODO: вынести в hook
   // Форматирования ФИО врача
   const formatDoctorName = (doctor) => {
     const firstInitial = doctor.firstName ? doctor.firstName.charAt(0) + '.' : '';
@@ -162,17 +164,14 @@ const DoctorSchedulePage = ({ doctor, onBack, isAuthorized, onNeedAuth, onAppoin
     const bookingData = {
       id: Date.now(),
       doctorId: doctor.id,
-      doctorName: formatDoctorName(doctor),
-      date: displayDate,
       dateKey: dateKey,
+      date: displayDate,
       time: selectedTime.time,
       slotIndex: selectedTime.index,
-      service: doctor.specialty,
       status: 'Запланировано',
-      statusColor: '#2196F3',
     };
 
-    console.log('Запись подтверждена:', bookingData);
+    console.log('Запись подтверждена:', selectedDate);
 
     // Обновляем глобальное хранилище
     const doctorKey = `doctor_${doctor.id}`;

@@ -29,22 +29,18 @@ import DoctorList from '../components/DoctorList';
 import styles from './MainPage.module.css';
 import DoctorSelectionPage from "./DoctorSelectionPage";
 import DoctorSchedulePage from './DoctorSchedulePage';
+import {ALL_DOCTORS} from "../test_data";
+
+const statusColors = {
+  'Запланировано': '#2196F3',
+  'Завершено': '#4CAF50',
+}
 
 const DOCTORS_DATA = [
   {
-    category: 'ОРВИ / COVID-19',
-    items: [
-      {
-        id: 'covid-doctor',
-        name: 'Дежурный врач ОРВИ',
-        icon: FaShieldVirus,
-        color: '#FF5252'
-      },
-    ],
-  },
-  {
     category: 'Специальности',
     items: [
+      { id: 'covid-doctor', name: 'Дежурный врач ОРВИ', icon: FaShieldVirus, color: '#FF5252' },
       { id: 'district-doctor', name: 'Участковый врач', icon: FaUserMd, color: '#2196F3' },
       { id: 'therapist', name: 'Терапевт', icon: FaStethoscope, color: '#4CAF50' },
       { id: 'certificates', name: 'Кабинет выдачи справок и направлений', icon: FaFileMedical, color: '#9C27B0' },
@@ -296,6 +292,11 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
         return updated;
       });
     }
+  };
+  const formatDoctorName = (doctor) => {
+    const firstInitial = doctor.firstName ? doctor.firstName.charAt(0) + '.' : '';
+    const middleInitial = doctor.middleName ? doctor.middleName.charAt(0) + '.' : '';
+    return `${doctor.lastName} ${firstInitial} ${middleInitial}`;
   };
 
   const handlePhoneChange = (value) => {
@@ -742,10 +743,11 @@ const MainPage = ({ isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, ap
                                   <span className={styles.historyTime}>{appointment.time}</span>
                                 )}
                               </div>
-                              <div className={styles.historyService}>{appointment.service}</div>
+                              <div className={styles.historyService}>{formatDoctorName(ALL_DOCTORS.find(d => d.id === appointment.doctorId))}</div>
+                              <div className={styles.historyService}>{ALL_DOCTORS.find(d => d.id === appointment.doctorId).desc}</div>
                               <div
                                 className={styles.historyStatus}
-                                style={{ color: appointment.statusColor }}
+                                style={{ color: statusColors[appointment.status] }}
                               >
                                 {appointment.status}
                               </div>

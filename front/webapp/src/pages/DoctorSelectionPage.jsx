@@ -2,25 +2,26 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaArrowLeft, FaUserMd, FaChevronRight } from 'react-icons/fa';
 import styles from './DoctorSelectionPage.module.css';
+import {ALL_DOCTORS} from "../test_data";
 
-const ALL_DOCTORS = [
-  { id: 1, lastName: 'Петров', firstName: 'Алексей', middleName: 'Сергеевич', desc: 'Дежурный врач ОРВИ', specialty: 'covid-doctor' },
-  { id: 2, lastName: 'Сидорова', firstName: 'Мария', middleName: 'Ивановна', desc: 'Дежурный врач ОРВИ', specialty: 'covid-doctor' },
-  { id: 3, lastName: 'Иванов', firstName: 'Иван', middleName: 'Иванович', desc: 'Терапевт', specialty: 'therapist' },
-  { id: 4, lastName: 'Кузнецова', firstName: 'Анна', middleName: 'Петровна', desc: 'Терапевт', specialty: 'therapist' },
-  { id: 5, lastName: 'Смирнов', firstName: 'Дмитрий', middleName: 'Александрович', desc: 'Терапевт', specialty: 'therapist' },
-  { id: 6, lastName: 'Волкова', firstName: 'Елена', middleName: 'Викторовна', desc: 'Участковый врач', specialty: 'district-doctor' },
-  { id: 7, lastName: 'Морозов', firstName: 'Сергей', middleName: 'Николаевич', desc: 'Участковый врач', specialty: 'district-doctor' },
-  { id: 8, lastName: 'Соколов', firstName: 'Михаил', middleName: 'Владимирович', desc: 'Хирург', specialty: 'surgeon' },
-  { id: 9, lastName: 'Новикова', firstName: 'Ольга', middleName: 'Андреевна', desc: 'Хирург', specialty: 'surgeon' },
-  { id: 10, lastName: 'Лебедев', firstName: 'Константин', middleName: 'Юрьевич', desc: 'Офтальмолог', specialty: 'ophthalmologist' },
-  { id: 11, lastName: 'Павлова', firstName: 'Татьяна', middleName: 'Сергеевна', desc: 'Оториноларинголог', specialty: 'otorhinolaryngologist' },
-  { id: 12, lastName: 'Федоров', firstName: 'Андрей', middleName: 'Павлович', desc: 'Уролог', specialty: 'urologist' },
-  { id: 13, lastName: 'Егорова', firstName: 'Наталья', middleName: 'Владимировна', desc: 'Выдача справок и направлений', specialty: 'certificates' },
-  { id: 14, lastName: 'Козлов', firstName: 'Владислав', middleName: 'Игоревич', desc: 'Диспансеризация', specialty: 'dispensary' },
-  { id: 15, lastName: 'Романова', firstName: 'Светлана', middleName: 'Дмитриевна', desc: 'Диспансеризация', specialty: 'dispensary' },
-  { id: 16, lastName: 'Зайцева', firstName: 'Ирина', middleName: 'Алексеевна', desc: 'Вакцинация', specialty: 'vaccination' },
-];
+// const ALL_DOCTORS = [
+//   { id: 1, lastName: 'Петров', firstName: 'Алексей', middleName: 'Сергеевич', desc: 'Дежурный врач ОРВИ', specialty: 'covid-doctor' },
+//   { id: 2, lastName: 'Сидорова', firstName: 'Мария', middleName: 'Ивановна', desc: 'Дежурный врач ОРВИ', specialty: 'covid-doctor' },
+//   { id: 3, lastName: 'Иванов', firstName: 'Иван', middleName: 'Иванович', desc: 'Терапевт', specialty: 'therapist' },
+//   { id: 4, lastName: 'Кузнецова', firstName: 'Анна', middleName: 'Петровна', desc: 'Терапевт', specialty: 'therapist' },
+//   { id: 5, lastName: 'Смирнов', firstName: 'Дмитрий', middleName: 'Александрович', desc: 'Терапевт', specialty: 'therapist' },
+//   { id: 6, lastName: 'Волкова', firstName: 'Елена', middleName: 'Викторовна', desc: 'Участковый врач', specialty: 'district-doctor' },
+//   { id: 7, lastName: 'Морозов', firstName: 'Сергей', middleName: 'Николаевич', desc: 'Участковый врач', specialty: 'district-doctor' },
+//   { id: 8, lastName: 'Соколов', firstName: 'Михаил', middleName: 'Владимирович', desc: 'Хирург', specialty: 'surgeon' },
+//   { id: 9, lastName: 'Новикова', firstName: 'Ольга', middleName: 'Андреевна', desc: 'Хирург', specialty: 'surgeon' },
+//   { id: 10, lastName: 'Лебедев', firstName: 'Константин', middleName: 'Юрьевич', desc: 'Офтальмолог', specialty: 'ophthalmologist' },
+//   { id: 11, lastName: 'Павлова', firstName: 'Татьяна', middleName: 'Сергеевна', desc: 'Оториноларинголог', specialty: 'otorhinolaryngologist' },
+//   { id: 12, lastName: 'Федоров', firstName: 'Андрей', middleName: 'Павлович', desc: 'Уролог', specialty: 'urologist' },
+//   { id: 13, lastName: 'Егорова', firstName: 'Наталья', middleName: 'Владимировна', desc: 'Выдача справок и направлений', specialty: 'certificates' },
+//   { id: 14, lastName: 'Козлов', firstName: 'Владислав', middleName: 'Игоревич', desc: 'Диспансеризация', specialty: 'dispensary' },
+//   { id: 15, lastName: 'Романова', firstName: 'Светлана', middleName: 'Дмитриевна', desc: 'Диспансеризация', specialty: 'dispensary' },
+//   { id: 16, lastName: 'Зайцева', firstName: 'Ирина', middleName: 'Алексеевна', desc: 'Вакцинация', specialty: 'vaccination' },
+// ];
 
 const DoctorSelectionPage = ({ specialtyId, specialtyName, onBack, onDoctorSelect }) => {
   const [doctors, setDoctors] = useState([]);
