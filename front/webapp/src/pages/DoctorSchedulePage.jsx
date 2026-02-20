@@ -22,7 +22,7 @@ const generateAvailableDays = () => {
 // Генерация временных слотов
 const generateTimeSlots = () => {
   const slots = [];
-  const startHour = 8;
+  const startHour = 10;
   const endHour = 18;
 
   let index = 0;
@@ -64,27 +64,23 @@ const DoctorSchedulePage = ({ doctor, onBack, isAuthorized, onNeedAuth, onAppoin
     try {
       console.log('[Schedule] Загрузка записей для врача:', doctor.id);
 
-      // Загружаем все записи для этого врача
+      // ✅ Используем getAppointments с фильтром по doctor_id
+      // Это загрузит ВСЕ записи этого врача (всех пользователей)
       const appointments = await api.getAppointments({ doctor_id: doctor.id });
-      console.log('[Schedule] Записи получены:', appointments);
+      console.log('[Schedule] Все записи врача:', appointments);
 
-      // Формируем объект занятых слотов { "2025-02-20": [0, 5, 10], ... }
       const bookedSlotsMap = {};
 
       appointments.forEach(appointment => {
+        // ✅ Блокируем только запланированные записи
         if (appointment.status === 'Запланировано') {
-          const appointmentDate = new Date(appointment.date);
-          const dateKey = formatDateKey(appointmentDate);
+          const dateKey = appointment.date; // "2026-02-20"
 
           if (!bookedSlotsMap[dateKey]) {
             bookedSlotsMap[dateKey] = [];
           }
 
-          // Вычисляем индекс слота из времени
-          const slotIndex = calculateSlotIndex(appointmentDate);
-          if (slotIndex !== -1) {
-            bookedSlotsMap[dateKey].push(slotIndex);
-          }
+          bookedSlotsMap[dateKey].push(appointment.slot_index);
         }
       });
 
@@ -96,22 +92,6 @@ const DoctorSchedulePage = ({ doctor, onBack, isAuthorized, onNeedAuth, onAppoin
   };
 
   // ✅ Вычисление индекса слота из даты/времени
-  const calculateSlotIndex = (date) => {
-    const hour = date.getHours();
-    const minute = date.getMinutes();
-
-    // Слоты начинаются с 8:00, каждые 20 минут
-    const startHour = 8;
-    const slotDuration = 20;
-
-    if (hour < startHour || hour >= 18) return -1;
-
-    const hoursFromStart = hour - startHour;
-    const slotsFromHours = hoursFromStart * 3; // 3 слота по 20 минут в часе
-    const slotsFromMinutes = Math.floor(minute / slotDuration);
-
-    return slotsFromHours + slotsFromMinutes;
-  };
 
   const handleTimeSlotClick = (slot) => {
     if (!isAuthorized) {
@@ -146,18 +126,10 @@ const DoctorSchedulePage = ({ doctor, onBack, isAuthorized, onNeedAuth, onAppoin
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return `${year}-${month}-${day}`; // "2026-02-20"
   };
 
-  // ✅ Форматирование даты в ISO формат для API (YYYY-MM-DDTHH:MM:SS)
-  const formatDateTimeForAPI = (date, time) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}T${time}:00`;
-  };
-
-  // Получение наз��ания дня недели
+  // Получение названия дня недели
   const getDayName = (date) => {
     const today = new Date();
     const tomorrow = new Date(today);
@@ -176,7 +148,14 @@ const DoctorSchedulePage = ({ doctor, onBack, isAuthorized, onNeedAuth, onAppoin
   const isSlotBooked = (slotIndex) => {
     if (!selectedDate || !doctor) return false;
 
-    const dateKey = formatDateKey(selectedDate);
+    const dateKey = formatDateKey(selectedDate); // "2026-02-20"
+
+    console.log('[isSlotBooked] Проверка слота:', {
+      dateKey,
+      slotIndex,
+      bookedSlots,
+      bookedForDate: bookedSlots[dateKey]
+    });
 
     if (!bookedSlots[dateKey]) return false;
 
@@ -211,30 +190,35 @@ const DoctorSchedulePage = ({ doctor, onBack, isAuthorized, onNeedAuth, onAppoin
 
     return false;
   };
+  const formatDateForAPI = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; // Формат: 2026-02-20
+  };
 
   // ✅ Подтверждение записи через API
   const handleConfirmBooking = async () => {
-    if (!selectedTime) return;
+    if (!selectedTime || loading) return;
 
     setLoading(true);
 
     try {
       const dateKey = formatDateKey(selectedDate);
-      const dateTimeISO = formatDateTimeForAPI(selectedDate, selectedTime.time);
+      const dateForAPI = formatDateForAPI(selectedDate);
 
-      // Данные для отправки на бэкенд
       const requestData = {
         doctor_id: doctor.id,
-        date: dateTimeISO,
+        date: dateForAPI,
+        slot_index: selectedTime.index,
       };
 
       console.log('[Schedule] Создание записи:', requestData);
 
-      // ✅ Отправляем запрос через API
       const responseData = await api.createAppointment(requestData);
       console.log('[Schedule] Запись создана:', responseData);
 
-      // Обновляем локальное состояние занятых слотов
+      // ✅ Обновляем локальное состояние занятых слотов
       setBookedSlots(prev => {
         const updated = { ...prev };
         if (!updated[dateKey]) {
@@ -244,16 +228,26 @@ const DoctorSchedulePage = ({ doctor, onBack, isAuthorized, onNeedAuth, onAppoin
         return updated;
       });
 
+      // ✅ ВАЖНО! Перезагружаем все записи с бэкенда
+      await loadAppointments();
+
       setSelectedTime(null);
+
+      const displayDate = selectedDate.toLocaleDateString('ru-RU');
+      alert(`Вы записаны к врачу ${formatDoctorName(doctor)} на ${displayDate} в ${selectedTime.time}`);
 
       // Передаём данные в родительский компонент
       onAppointmentBooked?.(responseData);
 
-      const displayDate = selectedDate.toLocaleDateString('ru-RU');
-      alert(`Вы записаны к врачу ${formatDoctorName(doctor)} на ${displayDate} в ${selectedTime.time}`);
     } catch (error) {
       console.error('[Schedule] Ошибка при записи:', error);
-      alert(`Произошла ошибка при записи: ${error.message}`);
+
+      if (error.message.includes('409') || error.message.includes('already')) {
+        alert('Это время уже занято. Выберите другое.');
+        await loadAppointments();
+      } else {
+        alert(`Произошла ошибка при записи: ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }

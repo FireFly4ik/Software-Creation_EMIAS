@@ -95,6 +95,9 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
   const [doctors, setDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(false);
 
+  const [userAppointments, setUserAppointments] = useState([]);
+  const [loadingAppointments, setLoadingAppointments] = useState(false);
+
   const api = useApi();
 
   useEffect(() => {
@@ -107,6 +110,33 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
   useEffect(() => {
     loadDoctors();
   }, []);
+
+// ✅ Загружаем когда есть PROFILE_DATA
+  useEffect(() => {
+    if (isAutorized && PROFILE_DATA?.id && doctors.length > 0) {
+      loadUserAppointments();
+    }
+  }, [isAutorized, PROFILE_DATA?.id, doctors.length]);
+
+  const loadUserAppointments = async () => {
+    if (!isAutorized || !PROFILE_DATA?.id) return;
+
+    try {
+      setLoadingAppointments(true);
+
+      // ✅ Передаём user_id из PROFILE_DATA
+      const appointmentsData = await api.getMyAppointments(PROFILE_DATA.id);
+      console.log('[Main] Мои записи загружены:', appointmentsData);
+
+      setUserAppointments(appointmentsData);
+    } catch (error) {
+      console.error('[Main] Ошибка загрузки записей:', error);
+    } finally {
+      setLoadingAppointments(false);
+    }
+  };
+
+
 
   // ✅ Добавляем функцию загрузки врачей
   const loadDoctors = async () => {
@@ -121,6 +151,42 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
       setLoadingDoctors(false);
     }
   };
+
+  // ✅ Вычисление времени из slot_index
+  const calculateTimeFromSlot = (slotIndex) => {
+    if (slotIndex === undefined || slotIndex === null) return '';
+
+    const startHour = 10; // Начало рабочего дня
+    const slotDuration = 20; // Длительность слота в минутах
+
+    const totalMinutes = slotIndex * slotDuration;
+    const hour = startHour + Math.floor(totalMinutes / 60);
+    const minute = totalMinutes % 60;
+
+    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+  };
+
+// ✅ Форматирование даты и времени записи
+  const formatAppointmentDateTime = (dateString, slotIndex) => {
+    if (!dateString) return { date: '—', time: '' };
+
+    // dateString приходит в формате "2026-02-20"
+    const date = new Date(dateString);
+    const formattedDate = date.toLocaleDateString('ru-RU');
+
+    // Вычисляем время из slot_index
+    const formattedTime = calculateTimeFromSlot(slotIndex);
+
+    console.log('[formatAppointmentDateTime]', {
+      dateString,
+      slotIndex,
+      formattedDate,
+      formattedTime
+    });
+
+    return { date: formattedDate, time: formattedTime };
+  };
+
   const handleToggleAdmin = async () => {
     const isAdmin = PROFILE_DATA?.role === 'admin';
 
@@ -131,7 +197,12 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
       try {
         await api.stopBeingAdmin();
         console.log('Роль администратора снята');
-        onRoleChange?.('user');
+
+        // ✅ Перезагружаем профиль с бэкенда
+        const updatedProfile = await api.getProfile();
+        onProfileUpdate?.(updatedProfile);
+        onRoleChange?.(updatedProfile.role);
+
         alert('Вы больше не администратор');
       } catch (error) {
         console.error('Ошибка при снятии роли:', error);
@@ -144,7 +215,12 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
       try {
         await api.becomeAdmin();
         console.log('Роль администратора получена');
-        onRoleChange?.('admin');
+
+        // ✅ Перезагружаем профиль с бэкенда
+        const updatedProfile = await api.getProfile();
+        onProfileUpdate?.(updatedProfile);
+        onRoleChange?.(updatedProfile.role);
+
         alert('Теперь вы администратор!');
       } catch (error) {
         console.error('Ошибка при получении роли:', error);
@@ -318,13 +394,15 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
     setActiveTab('profile');
   };
 
-  const handleAppointmentBooked = (appointmentData) => {
-    console.log('Новая запись добавлена:', appointmentData);
-    onAppointmentAdd?.(appointmentData);
+  const handleAppointmentBooked = async (appointmentData) => {
+    console.log('[Main] Новая запись добавлена:', appointmentData);
 
+    // Перезагружаем записи пользователя
+    await loadUserAppointments();
+
+    // Возвращаемся к профилю
     setSelectedDoctor(null);
     setSelectedSpecialty(null);
-
     setActiveTab('profile');
   };
 
@@ -420,18 +498,23 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
 
   // ✅ Добавляем функцию отмены записи
   const handleCancelAppointment = async (appointmentId) => {
-    const confirmed = window.confirm('Вы уверены, что хотите отменить запись?');
+    const confirmed = window.confirm('Вы уверены, что хотите отменить эту запись?');
     if (!confirmed) return;
 
     try {
-      console.log('Отмена записи:', appointmentId);
-      await api.cancelMyAppointment(appointmentId);
-      alert('Запись успешно отменена');
+      console.log('[Main] Отмена записи:', appointmentId);
 
-      // Здесь нужно обновить список записей
-      // Вызываем callback или перезагружаем данные
+      // ✅ Отправляем запрос на отмену
+      await api.cancelMyAppointment(appointmentId);
+
+      console.log('[Main] Запись отменена, перезагружаем список');
+
+      // ✅ ВАЖНО! Перезагружаем записи с бэкенда
+      await loadUserAppointments();
+
+      alert('Запись успешно отменена');
     } catch (error) {
-      console.error('Ошибка отмены записи:', error);
+      console.error('[Main] Ошибка отмены записи:', error);
       alert(`Ошибка при отмене записи: ${error.message}`);
     }
   };
@@ -882,17 +965,59 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
                   {/* История записей */}
                   <div className={styles.section}>
                     <h2 className={styles.sectionTitle}>История записей</h2>
-                    {appointments && appointments.length > 0 ? (
+                    {loadingAppointments ? (
+                      <motion.div
+                        className={styles.emptyAppointments}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        <FaCalendar className={styles.emptyIcon} />
+                        <p className={styles.emptyText}>Загрузка записей...</p>
+                      </motion.div>
+                    ) : userAppointments && userAppointments.length > 0 ? (
                       <div className={styles.historyList}>
-                        {appointments.map((appointment) => {
+                        {userAppointments.map((appointment) => {
                           const doctor = getDoctorById(appointment.doctor_id);
-                          const { date, time } = formatAppointmentDateTime(appointment.date);
 
-                          // Если врач не найден, пропускаем эту запись
+                          // ✅ Добавьте подробное логирование
+                          console.log('[Appointment Card] Запись:', appointment);
+                          console.log('[Appointment Card] Врач найден:', doctor);
+                          console.log('[Appointment Card] Все врачи:', doctors);
+
+                          // ✅ Если врач не найден, показываем placeholder
                           if (!doctor) {
-                            console.warn('Врач не найден для записи:', appointment);
-                            return null;
+                            console.warn('[Appointment Card] Врач не найден для записи:', appointment);
+                            return (
+                              <motion.div
+                                key={appointment.id}
+                                className={styles.historyCard}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                              >
+                                <div className={styles.historyContent}>
+                                  <div className={styles.historyDateTime}>
+                  <span className={styles.historyDate}>
+                    {formatAppointmentDateTime(appointment.date, appointment.slot_index).date}
+                  </span>
+                                    <span className={styles.historyTime}>
+                    {formatAppointmentDateTime(appointment.date, appointment.slot_index).time}
+                  </span>
+                                  </div>
+                                  <div className={styles.historyService}>
+                                    Врач #{appointment.doctor_id} (не найден)
+                                  </div>
+                                  <div
+                                    className={styles.historyStatus}
+                                    style={{ color: statusColors[appointment.status] || '#6B7280' }}
+                                  >
+                                    {appointment.status}
+                                  </div>
+                                </div>
+                              </motion.div>
+                            );
                           }
+
+                          const { date, time } = formatAppointmentDateTime(appointment.date, appointment.slot_index);
 
                           return (
                             <motion.button
@@ -915,7 +1040,7 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
                                   {formatDoctorName(doctor)}
                                 </div>
                                 <div className={styles.historyService}>
-                                  {doctor.desc}
+                                  {doctor.description}
                                 </div>
                                 <div
                                   className={styles.historyStatus}

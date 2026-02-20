@@ -268,10 +268,12 @@ const useApi = () => {
    * Получение своих записей
    * @returns {Promise<Array>} - Список записей
    */
-  const getMyAppointments = useCallback(async () => {
-    return await request('/profile/appointments', { method: 'GET' });
+// ✅ Получить МОИ записи (текущего авторизованного пользователя)
+  const getMyAppointments = useCallback(async (userId) => {
+    return await request(`/profile/appointments?user_id=${userId}`, {
+      method: 'GET'
+    });
   }, [request]);
-
   /**
    * Отмена своей записи
    * @param {number} appointmentId - ID записи
@@ -309,19 +311,22 @@ const useApi = () => {
    * @param {string} [filters.status] - Статус (Запланировано/Завершено/Отменено)
    * @returns {Promise<Array>} - Список записей
    */
+// ✅ Получить ВСЕ записи врача (всех пользователей) для блокировки слотов
   const getAppointments = useCallback(async (filters = {}) => {
-    const queryParams = new URLSearchParams();
+    const params = new URLSearchParams();
 
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
-        queryParams.append(key, value);
-      }
-    });
+    if (filters.doctor_id) {
+      params.append('doctor_id', filters.doctor_id);
+    }
+    if (filters.status) {
+      params.append('status', filters.status);
+    }
 
-    const queryString = queryParams.toString();
+    const queryString = params.toString();
     const endpoint = queryString ? `/appointment/?${queryString}` : '/appointment/';
 
-    return await request(endpoint, { method: 'GET' });
+    const response = await request(endpoint);
+    return response;
   }, [request]);
 
   /**
