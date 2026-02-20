@@ -77,8 +77,10 @@ async def update_user(
         key="user_access_token",
         value=access_token,
         httponly=False,
-        secure=False,
-        samesite="lax",
+        secure=True,
+        samesite="none",
+        path="/",
+        max_age=900
     )
 
     return {"msg": "ok"}
@@ -97,8 +99,10 @@ async def update_user(
         key="user_access_token",
         value=access_token,
         httponly=False,
-        secure=False,
-        samesite="lax",
+        secure=True,
+        samesite="none",
+        path="/",
+        max_age=900
     )
 
     return {"msg": "ok"}

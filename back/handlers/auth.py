@@ -37,24 +37,23 @@ async def login(
     init_data = credentials.credentials
     access_token, refresh_token = await auth_service.login_via_telegram(init_data)
 
-    # Для ngrok (HTTPS) нужны secure=True и samesite="none"
     response.set_cookie(
         key="user_access_token",
         value=access_token,
         httponly=False,
-        secure=True,  # ВАЖНО! ngrok использует HTTPS
-        samesite="none",  # ВАЖНО! для работы через ngrok
+        secure=True,
+        samesite="none",
         path="/",
-        max_age=1800,  # 30 минут
+        max_age=900
     )
     response.set_cookie(
         key="user_refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=True,  # ВАЖНО! ngrok использует HTTPS
-        samesite="none",  # ВАЖНО! для работы через ngrok
+        secure=True,
+        samesite="none",
         path="/",
-        max_age=604800,  # 7 дней
+        max_age=24109200
     )
 
     return {"msg": "ok"}
@@ -79,8 +78,10 @@ async def verify_account(
         key="user_access_token",
         value=access_token,
         httponly=False,
-        secure=False,
-        samesite="lax",
+        secure=True,
+        samesite="none",
+        path="/",
+        max_age=900
     )
     return {"msg": "ok"}
 
@@ -94,16 +95,20 @@ async def refresh_tokens(
     access_token, new_refresh_token = await auth_service.refresh_tokens(refresh_token)
     response.set_cookie(
         key="user_refresh_token",
-        value=new_refresh_token,
+        value=refresh_token,
         httponly=True,
         secure=True,
-        samesite="lax",
+        samesite="none",
+        path="/",
+        max_age=24109200
     )
     response.set_cookie(
         key="user_access_token",
         value=access_token,
         httponly=False,
-        secure=False,
-        samesite="lax",
+        secure=True,
+        samesite="none",
+        path="/",
+        max_age=900
     )
     return {"msg": "ok"}
