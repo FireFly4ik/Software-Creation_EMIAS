@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 
 from core.exceptions import (
     AppointmentAlreadyExistsError,
@@ -122,3 +123,7 @@ class AppointmentService:
             filters=filters
         )
         return appointments
+
+    async def finish_expired_appointments(self):
+        now = datetime.utcnow()
+        await self.appointment_repository.finish_appointments(now)

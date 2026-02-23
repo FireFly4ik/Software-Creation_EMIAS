@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from sqlalchemy import select
+import sqlalchemy
+from sqlalchemy import select, update as sqlalchemy_update, func
 
 from core.base_dao import BaseDAO
 from models.appointment import Appointment, AppointmentStatusEnum
@@ -39,13 +40,28 @@ class AppointmentRepository(BaseDAO[Appointment]):
         result = await self.db_session.execute(query)
         return result.scalar_one_or_none()
 
+    async def finish_appointments(self, current_dt: datetime) -> None:
+        query = (
+            sqlalchemy_update(self.model)
+            .where(
+                self.model.status == AppointmentStatusEnum.PLANNED,
+                (
+                        func.cast(self.model.date, sqlalchemy.DateTime) +
+                        func.cast(
+                            func.concat((self.model.slot_index + 1) * 20, ' minutes'),
+                            sqlalchemy.Interval
+                        )
+                ) <= current_dt
+            )
+            .values(status=AppointmentStatusEnum.FINISHED)
+        )
+        await self.db_session.execute(query)
+
     async def get_appointments_with_filters(
         self, filters: AppointmentFilterSchema
     ) -> list[Appointment]:
         return await self.find_all(filters)
 
-    # async def list_appointments_with_specialization():
-    #     ...
 
     async def update_appointment(
         self, appointment_id: int, appointment_data: AppointmentUpdateSchema
