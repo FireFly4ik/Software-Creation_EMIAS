@@ -1,12 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from infrastructure.scheduler import get_scheduler
 from core.exceptions import AppError
 from exception_handlers import app_error_handler, exception_handler
 from handlers.appointment import router as appointment_router
 from handlers.auth import router as auth_router
 from handlers.doctor import router as doctor_router
 from handlers.profile import router as profile_router
+from services.jobs.finish_appointments import finish_appointments
+
 
 app = FastAPI()
 
@@ -28,5 +30,20 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["Set-Cookie"],  # ВАЖНО!
+    expose_headers=["Set-Cookie"],
 )
+
+@app.on_event("startup")
+async def start_scheduler():
+    scheduler = get_scheduler()
+
+    if scheduler.get_job("finish_appointments") is None:
+        scheduler.add_job(
+            finish_appointments,
+            trigger="cron",
+            minute="*",
+            id="finish_appointments",
+            replace_existing=False,
+        )
+
+    scheduler.start()
