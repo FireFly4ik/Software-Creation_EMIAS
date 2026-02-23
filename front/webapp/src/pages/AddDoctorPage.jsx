@@ -4,7 +4,6 @@ import { FaArrowLeft, FaUserMd, FaSave } from 'react-icons/fa';
 import clsx from 'clsx';
 import styles from './AddDoctorPage.module.css';
 
-// ✅ Теперь используем полные названия из Enum бэкенда
 const SPECIALTIES = [
   { id: 'covid-doctor', value: 'Дежурный врач ОРВИ', name: 'Дежурный врач ОРВИ' },
   { id: 'district-doctor', value: 'Участковый врач', name: 'Участковый врач' },
@@ -73,12 +72,6 @@ const AddDoctorPage = ({ onBack, onSave }) => {
     }
   };
 
-  const getSelectedSpecialtyName = () => {
-    if (!formData.specialty) return '';
-    const specialty = SPECIALTIES.find(s => s.value === formData.specialty);
-    return specialty ? specialty.name : '';
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -97,16 +90,14 @@ const AddDoctorPage = ({ onBack, onSave }) => {
     setIsSubmitting(true);
 
     try {
-      // ✅ specialization и description - это одно и то же значение из Enum
       const doctorData = {
         surname: formData.lastName,
         first_name: formData.firstName,
         middle_name: formData.middleName || "",
-        specialization: formData.specialty,  // "Уролог"
-        description: formData.specialty,     // "Уролог" (то же самое)
+        specialization: formData.specialty,
+        description: formData.specialty,
       };
 
-      console.log('Отправка данных врача на бэкенд:', doctorData);
 
       await onSave?.(doctorData);
 
@@ -120,7 +111,6 @@ const AddDoctorPage = ({ onBack, onSave }) => {
       setErrors({});
 
     } catch (error) {
-      console.error('Ошибка добавления врача:', error);
       alert(`Произошла ошибка: ${error.message}`);
     } finally {
       setIsSubmitting(false);
@@ -172,18 +162,6 @@ const AddDoctorPage = ({ onBack, onSave }) => {
               </motion.span>
             )}
           </div>
-
-          {/* Предпросмотр описания */}
-          {formData.specialty && (
-            <motion.div
-              className={styles.previewCard}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className={styles.previewLabel}>Описание специальности:</div>
-              <div className={styles.previewValue}>{getSelectedSpecialtyName()}</div>
-            </motion.div>
-          )}
 
           {/* Фамилия */}
           <div className={styles.field}>

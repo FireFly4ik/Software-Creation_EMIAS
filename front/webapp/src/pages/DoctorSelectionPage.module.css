@@ -9,11 +9,10 @@
     position: relative;
 }
 
-/* Шапка */
 .header {
     background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
     padding: 16px;
-    padding-top: calc(16px + env(safe-area-inset-top));
+    padding-top: calc(40px + env(safe-area-inset-top));
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -31,7 +30,6 @@
     text-align: left;
 }
 
-/* Кнопка добавления врача */
 .addButton {
     display: flex;
     align-items: center;
@@ -63,14 +61,12 @@
     height: 16px;
 }
 
-/* Контент */
 .content {
     flex: 1;
     padding: 16px;
     overflow-y: auto;
 }
 
-/* Пустое состояние */
 .emptyState {
     display: flex;
     flex-direction: column;
@@ -94,7 +90,6 @@
     line-height: 1.5;
 }
 
-/* Список врачей */
 .doctorsList {
     display: flex;
     flex-direction: column;
@@ -172,7 +167,6 @@
     flex-shrink: 0;
 }
 
-/* Плавающая кнопка возврата */
 .backButton {
     position: fixed;
     bottom: calc(24px + env(safe-area-inset-bottom));
@@ -208,7 +202,6 @@
     color: #FFFFFF;
 }
 
-/* Скроллбар */
 .content::-webkit-scrollbar {
     width: 6px;
 }
@@ -226,7 +219,6 @@
     background: #94A3B8;
 }
 
-/* Адаптив */
 @media (max-width: 360px) {
     .title {
         font-size: 18px;
@@ -269,7 +261,6 @@
     }
 }
 
-/* Анимация появления */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -285,7 +276,6 @@
     animation: fadeIn 0.3s ease;
 }
 
-/* Анимация кнопки возврата */
 @keyframes fadeInUp {
     from {
         opacity: 0;

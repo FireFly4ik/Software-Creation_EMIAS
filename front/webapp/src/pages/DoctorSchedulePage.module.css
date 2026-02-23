@@ -11,7 +11,7 @@
 .header {
     background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
     padding: 16px 16px;
-    padding-top: calc(32px + env(safe-area-inset-top));
+    padding-top: calc(40px + env(safe-area-inset-top));
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
     display: flex;
     align-items: center;

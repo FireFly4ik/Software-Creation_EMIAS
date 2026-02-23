@@ -116,6 +116,6 @@ async def list_my_appointments(
     ],
 ):
     appointments = await appointment_repository.find_all(
-        AppointmentFilterSchema(user_idid=user_data.id)
+        AppointmentFilterSchema(user_id=user_data.id)
     )
     return appointments

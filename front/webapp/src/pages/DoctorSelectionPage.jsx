@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { FaArrowLeft, FaUserMd, FaChevronRight } from 'react-icons/fa';
 import styles from './DoctorSelectionPage.module.css';
 
-// Маппинг specialtyId к значениям Enum бэкенда
 const SPECIALTY_MAPPING = {
   'covid-doctor': 'Дежурный врач ОРВИ',
   'district-doctor': 'Участковый врач',
@@ -22,29 +21,20 @@ const DoctorSelectionPage = ({
                                specialtyName,
                                onBack,
                                onDoctorSelect,
-                               allDoctors = [],  // ✅ Получаем врачей из MainPage
-                               loading = false   // ✅ Получаем состояние загрузки
+                               allDoctors = [],
+                               loading = false
                              }) => {
   const [filteredDoctors, setFilteredDoctors] = useState([]);
 
   useEffect(() => {
-    // ✅ Фильтруем врачей по специализации
     const specializationValue = SPECIALTY_MAPPING[specialtyId];
     const filtered = allDoctors.filter(
       doctor => doctor.specialization === specializationValue
     );
 
-    console.log('[DoctorSelection] Фильтрация врачей:', {
-      specialtyId,
-      specializationValue,
-      allDoctors: allDoctors.length,
-      filtered: filtered.length
-    });
-
     setFilteredDoctors(filtered);
   }, [specialtyId, allDoctors]);
 
-  // Функция для форматирования ФИО в "Фамилия И. О."
   const formatDoctorName = (doctor) => {
     const firstInitial = doctor.first_name ? doctor.first_name.charAt(0) + '.' : '';
     const middleInitial = doctor.middle_name ? doctor.middle_name.charAt(0) + '.' : '';
@@ -52,7 +42,6 @@ const DoctorSelectionPage = ({
   };
 
   const handleDoctorClick = (doctor) => {
-    console.log('Выбран врач:', doctor);
     onDoctorSelect?.(doctor);
   };
 

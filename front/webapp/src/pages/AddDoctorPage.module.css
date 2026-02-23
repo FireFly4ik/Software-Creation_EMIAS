@@ -1,5 +1,4 @@
 .container {
-    min-height: 100vh;
     min-height: 100dvh;
     background: #F5F7FA;
     display: flex;
@@ -8,11 +7,10 @@
     padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Шапка */
 .header {
     background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
     padding: 20px 16px;
-    padding-top: calc(20px + env(safe-area-inset-top));
+    padding-top: calc(40px + env(safe-area-inset-top));
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
 }
 
@@ -36,14 +34,12 @@
     line-height: 1.2;
 }
 
-/* Контент */
 .content {
     flex: 1;
     padding: 20px 16px;
     overflow-y: auto;
 }
 
-/* Форма */
 .form {
     max-width: 500px;
     margin: 0 auto;
@@ -125,7 +121,6 @@
     margin-top: 4px;
 }
 
-/* Карточка предпросмотра */
 .previewCard {
     padding: 16px;
     background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
@@ -150,7 +145,6 @@
     line-height: 1.4;
 }
 
-/* Кнопка отправки */
 .submitButton {
     width: 100%;
     display: flex;
@@ -195,7 +189,6 @@
     height: 20px;
 }
 
-/* Плавающая кнопка возврата */
 .backButton {
     position: fixed;
     bottom: calc(24px + env(safe-area-inset-bottom));
@@ -230,7 +223,6 @@
     color: #FFFFFF;
 }
 
-/* Адаптив */
 @media (max-width: 360px) {
     .title {
         font-size: 18px;
@@ -263,7 +255,6 @@
     }
 }
 
-/* Скроллбар */
 .content::-webkit-scrollbar {
     width: 6px;
 }

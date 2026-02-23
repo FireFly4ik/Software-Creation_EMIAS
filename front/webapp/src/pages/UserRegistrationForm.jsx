@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import {
@@ -27,20 +27,17 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
-  // Валидация email
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  // Валидация телефона
   const validatePhone = (phone) => {
-    if (!phone || phone.trim() === '') return true; // Телефон необязателен
+    if (!phone || phone.trim() === '') return true;
     const cleanPhone = phone.replace(/\D/g, '');
     return cleanPhone.length === 11 && cleanPhone.startsWith('7');
   };
 
-  // Форматирование телефона
   const formatPhoneNumber = (value) => {
     let cleaned = value.replace(/\D/g, '');
 
@@ -77,7 +74,6 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
     return formatted;
   };
 
-  // Валидация даты рождения
   const validateBirthDate = (date) => {
     if (!date) return false;
     const selectedDate = new Date(date);
@@ -86,7 +82,6 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
     return age >= 0 && age <= 150;
   };
 
-  // Валидация формы
   const validateForm = () => {
     const newErrors = {};
 
@@ -114,7 +109,6 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
       newErrors.gender = 'Обязательное поле';
     }
 
-    // Валидация телефона (если введён)
     if (formData.phone && formData.phone.trim() !== '') {
       if (!validatePhone(formData.phone)) {
         newErrors.phone = 'Некорректный номер телефона';
@@ -124,7 +118,6 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
     return newErrors;
   };
 
-  // Проверка заполненности обязательных полей
   const isFormValid = () => {
     const newErrors = validateForm();
     return Object.keys(newErrors).length === 0;
@@ -133,7 +126,6 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
-    // Убираем ошибку при начале ввода
     if (errors[field]) {
       setErrors(prev => {
         const updated = { ...prev };
@@ -179,12 +171,10 @@ const UserRegistrationForm = ({ onSubmit, onGuest }) => {
       agreedToNewsletter,
     };
 
-    console.log('Форма отправлена:', submissionData);
     onSubmit?.(submissionData);
   };
 
   const handleGuestClick = () => {
-    console.log('Пользователь остался гостем');
     onGuest?.();
   };
 

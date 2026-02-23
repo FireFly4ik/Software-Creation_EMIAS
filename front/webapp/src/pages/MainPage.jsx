@@ -24,7 +24,7 @@ import {
   FaSave,
   FaTimes,
   FaUserShield,
-  FaPlus
+  FaPlus, FaCalendarAlt
 } from 'react-icons/fa';
 import DoctorList from '../components/DoctorList';
 import styles from './MainPage.module.css';
@@ -33,6 +33,8 @@ import DoctorSchedulePage from './DoctorSchedulePage';
 import AddDoctorPage from './AddDoctorPage';
 import { ALL_DOCTORS } from "../test_data";
 import useApi from '../hooks/useApi';
+import AdminDoctorSelectPage from './AdminDoctorSelectPage';
+import AdminAppointmentsPage from './AdminAppointmentsPage';
 
 const statusColors = {
   'Запланировано': '#2196F3',
@@ -42,13 +44,10 @@ const statusColors = {
 const formatAppointmentDateTime = (dateString) => {
   if (!dateString) return { date: '—', time: '' };
 
-  // Парсим дату в формате "YYYY-MM-DD HH:MM:SS"
   const date = new Date(dateString);
 
-  // Форматируем дату как "ДД.ММ.ГГГГ"
   const formattedDate = date.toLocaleDateString('ru-RU');
 
-  // Форматируем время как "HH:MM"
   const formattedTime = date.toLocaleTimeString('ru-RU', {
     hour: '2-digit',
     minute: '2-digit'
@@ -57,7 +56,6 @@ const formatAppointmentDateTime = (dateString) => {
   return { date: formattedDate, time: formattedTime };
 };
 
-// Функция для получения врача по ID (с проверкой на существование)
 const getDoctorById = (doctorId) => {
   const doctor = ALL_DOCTORS.find(d => d.id === doctorId);
   return doctor || null;
@@ -83,14 +81,24 @@ const DOCTORS_DATA = [
 
 const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, appointments, onAppointmentAdd, onRoleChange }) => {
   const [activeTab, setActiveTab] = useState('profile');
+
   const [direction, setDirection] = useState(0);
+
   const [isEditing, setIsEditing] = useState(false);
+
   const [editedProfile, setEditedProfile] = useState(PROFILE_DATA || {});
+
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+
   const [selectedSpecialty, setSelectedSpecialty] = useState(null);
+
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+
   const [isAddingDoctor, setIsAddingDoctor] = useState(false);
+
+  const [showAdminDoctorSelect, setShowAdminDoctorSelect] = useState(false);
+  const [selectedAdminDoctor, setSelectedAdminDoctor] = useState(null);
 
   const [doctors, setDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(false);
@@ -106,12 +114,10 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
     }
   }, [PROFILE_DATA]);
 
-  // ✅ Загружаем врачей при монтировании компонента
   useEffect(() => {
     loadDoctors();
   }, []);
 
-// ✅ Загружаем когда есть PROFILE_DATA
   useEffect(() => {
     if (isAutorized && PROFILE_DATA?.id && doctors.length > 0) {
       loadUserAppointments();
@@ -124,13 +130,10 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
     try {
       setLoadingAppointments(true);
 
-      // ✅ Передаём user_id из PROFILE_DATA
       const appointmentsData = await api.getMyAppointments(PROFILE_DATA.id);
-      console.log('[Main] Мои записи загружены:', appointmentsData);
 
       setUserAppointments(appointmentsData);
     } catch (error) {
-      console.error('[Main] Ошибка загрузки записей:', error);
     } finally {
       setLoadingAppointments(false);
     }
@@ -138,26 +141,22 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
 
 
 
-  // ✅ Добавляем функцию загрузки врачей
   const loadDoctors = async () => {
     try {
       setLoadingDoctors(true);
       const doctorsData = await api.getDoctors();
       setDoctors(doctorsData);
-      console.log('Врачи загружены:', doctorsData);
     } catch (error) {
-      console.error('Ошибка загрузки врачей:', error);
     } finally {
       setLoadingDoctors(false);
     }
   };
 
-  // ✅ Вычисление времени из slot_index
   const calculateTimeFromSlot = (slotIndex) => {
     if (slotIndex === undefined || slotIndex === null) return '';
 
-    const startHour = 10; // Начало рабочего дня
-    const slotDuration = 20; // Длительность слота в минутах
+    const startHour = 10;
+    const slotDuration = 20;
 
     const totalMinutes = slotIndex * slotDuration;
     const hour = startHour + Math.floor(totalMinutes / 60);
@@ -166,23 +165,13 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
     return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
   };
 
-// ✅ Форматирование даты и времени записи
   const formatAppointmentDateTime = (dateString, slotIndex) => {
     if (!dateString) return { date: '—', time: '' };
 
-    // dateString приходит в формате "2026-02-20"
     const date = new Date(dateString);
     const formattedDate = date.toLocaleDateString('ru-RU');
 
-    // Вычисляем время из slot_index
     const formattedTime = calculateTimeFromSlot(slotIndex);
-
-    console.log('[formatAppointmentDateTime]', {
-      dateString,
-      slotIndex,
-      formattedDate,
-      formattedTime
-    });
 
     return { date: formattedDate, time: formattedTime };
   };
@@ -196,16 +185,12 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
 
       try {
         await api.stopBeingAdmin();
-        console.log('Роль администратора снята');
 
-        // ✅ Перезагружаем профиль с бэкенда
         const updatedProfile = await api.getProfile();
         onProfileUpdate?.(updatedProfile);
-        onRoleChange?.(updatedProfile.role);
 
         alert('Вы больше не администратор');
       } catch (error) {
-        console.error('Ошибка при снятии роли:', error);
         alert(`Ошибка: ${error.message}`);
       }
     } else {
@@ -214,16 +199,12 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
 
       try {
         await api.becomeAdmin();
-        console.log('Роль администратора получена');
 
-        // ✅ Перезагружаем профиль с бэкенда
         const updatedProfile = await api.getProfile();
         onProfileUpdate?.(updatedProfile);
-        onRoleChange?.(updatedProfile.role);
 
         alert('Теперь вы администратор!');
       } catch (error) {
-        console.error('Ошибка при получении роли:', error);
         alert(`Ошибка: ${error.message}`);
       }
     }
@@ -239,29 +220,23 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
 
   const handleSaveDoctor = async (newDoctorData) => {
     try {
-      console.log('Создание врача через API:', newDoctorData);
 
       const createdDoctor = await api.createDoctor(newDoctorData);
-      console.log('Врач успешно создан:', createdDoctor);
 
-      // Перезагружаем список врачей
       await loadDoctors();
 
       setIsAddingDoctor(false);
       alert('Врач успешно добавлен!');
     } catch (error) {
-      console.error('Ошибка создания врача:', error);
       alert(`Ошибка при добавлении врача: ${error.message}`);
     }
   };
 
-  // Валидация email
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  // Валидация даты рождения
   const validateBirthDate = (date) => {
     if (!date) return false;
     const selectedDate = new Date(date);
@@ -270,14 +245,12 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
     return age >= 0 && age <= 150;
   };
 
-  // Валидация телефона
   const validatePhone = (phone) => {
     if (!phone || phone.trim() === '') return true;
     const cleanPhone = phone.replace(/\D/g, '');
     return cleanPhone.length === 11 && cleanPhone.startsWith('7');
   };
 
-  // Форматирование телефона
   const formatPhoneNumber = (value) => {
     let cleaned = value.replace(/\D/g, '');
 
@@ -314,7 +287,6 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
     return formatted;
   };
 
-  // Валидация формы
   const validateForm = () => {
     const newErrors = {};
 
@@ -357,9 +329,7 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
   };
 
   const handleAppointmentClick = (appointment) => {
-    console.log('Запись:', appointment);
 
-    // Показываем диалог с опцией отмены
     if (appointment.status === 'Запланировано') {
       const action = window.confirm('Хотите отменить эту запись?');
       if (action) {
@@ -368,7 +338,6 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
     }
   };
   const handleDoctorClick = (doctor) => {
-    console.log('Врач/Специальность:', doctor.name);
     setSelectedSpecialty({
       id: doctor.id,
       name: doctor.name
@@ -380,7 +349,6 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
   };
 
   const handleDoctorSelect = (doctor) => {
-    console.log('Выбран врач:', doctor);
     setSelectedDoctor(doctor);
   };
 
@@ -395,12 +363,9 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
   };
 
   const handleAppointmentBooked = async (appointmentData) => {
-    console.log('[Main] Новая запись добавлена:', appointmentData);
 
-    // Перезагружаем записи пользователя
     await loadUserAppointments();
 
-    // Возвращаемся к профилю
     setSelectedDoctor(null);
     setSelectedSpecialty(null);
     setActiveTab('profile');
@@ -436,7 +401,6 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
     setIsEditing(false);
   };
 
-  // ✅ Обновляем функцию сохранения профиля
   const handleSaveEdit = async () => {
     const newErrors = validateForm();
 
@@ -454,9 +418,7 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
     }
 
     try {
-      console.log('Обновление профиля через API:', editedProfile);
 
-      // Формируем данные для API (убираем лишние поля если нужно)
       const updateData = {
         first_name: editedProfile.firstName,
         surname: editedProfile.lastName,
@@ -468,9 +430,7 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
       };
 
       await api.updateProfile(updateData);
-      console.log('Профиль успешно обновлён');
 
-      // Вызываем callback для обновления данных в родительском компоненте
       onProfileUpdate?.(editedProfile);
 
       setErrors({});
@@ -478,7 +438,6 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
       setIsEditing(false);
       alert('Профиль успешно обновлён!');
     } catch (error) {
-      console.error('Ошибка обновления профиля:', error);
       alert(`Ошибка при обновлении профиля: ${error.message}`);
     }
   };
@@ -496,25 +455,17 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
     }
   };
 
-  // ✅ Добавляем функцию отмены записи
   const handleCancelAppointment = async (appointmentId) => {
     const confirmed = window.confirm('Вы уверены, что хотите отменить эту запись?');
     if (!confirmed) return;
 
     try {
-      console.log('[Main] Отмена записи:', appointmentId);
+      await api.cancelAppointment(appointmentId);
 
-      // ✅ Отправляем запрос на отмену
-      await api.cancelMyAppointment(appointmentId);
-
-      console.log('[Main] Запись отменена, перезагружаем список');
-
-      // ✅ ВАЖНО! Перезагружаем записи с бэкенда
       await loadUserAppointments();
 
       alert('Запись успешно отменена');
     } catch (error) {
-      console.error('[Main] Ошибка отмены записи:', error);
       alert(`Ошибка при отмене записи: ${error.message}`);
     }
   };
@@ -561,7 +512,28 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
     }),
   };
 
-  // Если открыта страница добавления врача
+  if (showAdminDoctorSelect && userRole === 'admin') {
+    if (selectedAdminDoctor) {
+      return (
+        <AdminAppointmentsPage
+          doctor={selectedAdminDoctor}
+          onBack={() => setSelectedAdminDoctor(null)}
+        />
+      );
+    }
+
+    return (
+      <AdminDoctorSelectPage
+        doctors={doctors}
+        onSelectDoctor={(doctor) => setSelectedAdminDoctor(doctor)}
+        onBack={() => {
+          setShowAdminDoctorSelect(false);
+          setSelectedAdminDoctor(null);
+        }}
+      />
+    );
+  }
+
   if (isAddingDoctor) {
     return (
       <AddDoctorPage
@@ -592,8 +564,8 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
         specialtyName={selectedSpecialty.name}
         onBack={handleBackFromDoctorSelection}
         onDoctorSelect={handleDoctorSelect}
-        allDoctors={doctors}           // ✅ Передаём список врачей
-        loading={loadingDoctors}       // ✅ Передаём состояние загрузки
+        allDoctors={doctors}
+        loading={loadingDoctors}
       />
     );
   }
@@ -979,14 +951,7 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
                         {userAppointments.map((appointment) => {
                           const doctor = getDoctorById(appointment.doctor_id);
 
-                          // ✅ Добавьте подробное логирование
-                          console.log('[Appointment Card] Запись:', appointment);
-                          console.log('[Appointment Card] Врач найден:', doctor);
-                          console.log('[Appointment Card] Все врачи:', doctors);
-
-                          // ✅ Если врач не найден, показываем placeholder
                           if (!doctor) {
-                            console.warn('[Appointment Card] Врач не найден для записи:', appointment);
                             return (
                               <motion.div
                                 key={appointment.id}
@@ -1103,19 +1068,32 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
               className={styles.tabContent}
             >
               {userRole === 'admin' && (
-                <div className={styles.adminSection}>
-                  <motion.button
-                    className={styles.addDoctorButton}
-                    onClick={handleAddDoctorClick}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
-                    <FaPlus className={styles.addDoctorIcon} />
-                    Добавить врача
-                  </motion.button>
-                </div>
+                <>
+                  <h2 className={styles.sectionTitle}>Панель администратора</h2>
+                  <div className={styles.adminSection}>
+
+                    <motion.button
+                      className={styles.adminButton}
+                      onClick={() => setShowAdminDoctorSelect(true)}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <FaCalendarAlt />
+                      <span>Управление записями врачей</span>
+                    </motion.button>
+                    <motion.button
+                      className={styles.addDoctorButton}
+                      onClick={handleAddDoctorClick}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <FaPlus className={styles.addDoctorIcon} />
+                      Добавить врача
+                    </motion.button>
+                  </div>
+                </>
               )}
               <DoctorList
                 categories={DOCTORS_DATA}
