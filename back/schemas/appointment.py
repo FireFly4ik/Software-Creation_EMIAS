@@ -23,6 +23,7 @@ class AppointmentFilterSchema(BaseModel):
     id: int | None = None
     user_id: int | None = None
     doctor_id: int | None = None
+    slot_ids: int | None = None
     status: AppointmentStatusEnum | None = None
 
 
