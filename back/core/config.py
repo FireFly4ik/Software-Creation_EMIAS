@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     TELEGRAM_MAX_AGE_SECONDS: int = 86400
     REFRESH_EXPIRES_DAYS: int = 30
     ACCESS_EXPIRES_MINUTES: int = 10
+    CRON_FREQ_MINUTES: int = 1
     model_config = SettingsConfigDict(env_file=Path(__file__).parent.parent / ".env")
 
 
