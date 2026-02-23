@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from infrastructure.scheduler import get_scheduler
 from core.exceptions import AppError
+from core.config import settings
 from exception_handlers import app_error_handler, exception_handler
 from handlers.appointment import router as appointment_router
 from handlers.auth import router as auth_router
@@ -41,7 +42,7 @@ async def start_scheduler():
         scheduler.add_job(
             finish_appointments,
             trigger="cron",
-            minute="*",
+            minute=f"*/{settings.CRON_FREQ_MINUTES}",
             id="finish_appointments",
             replace_existing=False,
         )
