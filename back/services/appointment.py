@@ -56,8 +56,9 @@ class AppointmentService:
         if not slot_free:
             raise DoctorSlotBusyError()
 
-        cancelled = await self.appointment_repository.find_all(
+        cancelled_by_user = await self.appointment_repository.find_all(
             AppointmentFilterSchema(
+                user_id=user_id,
                 doctor_id=appointment_data.doctor_id,
                 date=appointment_data.date,
                 slot_index=appointment_data.slot_index,
@@ -65,12 +66,11 @@ class AppointmentService:
             )
         )
 
-        if cancelled:
+        if cancelled_by_user:
             return await self.appointment_repository.update_appointment(
-                appointment_id=cancelled[0].id,
+                appointment_id=cancelled_by_user[0].id,
                 appointment_data=AppointmentUpdateSchema(
                     status=AppointmentStatusEnum.PLANNED,
-                    user_id=user_id
                 )
             )
 

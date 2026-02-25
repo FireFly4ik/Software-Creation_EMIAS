@@ -1,4 +1,5 @@
-from datetime import date
+
+import datetime
 
 from pydantic import BaseModel
 
@@ -7,14 +8,14 @@ from models.appointment import AppointmentStatusEnum
 
 class AppointmentCreateSchema(BaseModel):
     doctor_id: int
-    date: date
+    date: datetime.date
     slot_index: int
 
 
 class AppointmentDBCreateSchema(BaseModel):
     user_id: int
     doctor_id: int
-    date: date
+    date: datetime.date
     slot_index: int
     status: AppointmentStatusEnum = AppointmentStatusEnum.PLANNED
 
@@ -23,7 +24,8 @@ class AppointmentFilterSchema(BaseModel):
     id: int | None = None
     user_id: int | None = None
     doctor_id: int | None = None
-    slot_ids: int | None = None
+    slot_index: int | None = None
+    date: datetime.date | None = None
     status: AppointmentStatusEnum | None = None
 
 

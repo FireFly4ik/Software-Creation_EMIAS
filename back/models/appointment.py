@@ -52,7 +52,7 @@ class Appointment(Base):
     doctor: Mapped["Doctor"] = relationship("Doctor", back_populates="appointments")
 
     __table_args__ = (
-        UniqueConstraint("doctor_id", "date", "slot_index", name="uq_doctor_date_slot"),
+        UniqueConstraint("doctor_id", "date", "slot_index", "status", "user_id", name="uq_doctor_slot"),
         CheckConstraint(
             "slot_index >= 0 AND slot_index < 24", name="ck_slot_index_range"
         ),
