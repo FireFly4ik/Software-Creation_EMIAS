@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { FaUserMd, FaChevronRight, FaArrowLeft } from 'react-icons/fa';
 import styles from './AdminDoctorSelectPage.module.css';
 
-const AdminDoctorSelectPage = ({ doctors = [], onSelectDoctor, onBack }) => {
+const AdminDoctorSelectPage = ({ doctors = [], onSelectDoctor, onBack, onUpdateProfile }) => {
   const formatDoctorName = (doctor) => {
     const firstInitial = doctor.first_name ? doctor.first_name.charAt(0) + '.' : '';
     const middleInitial = doctor.middle_name ? doctor.middle_name.charAt(0) + '.' : '';

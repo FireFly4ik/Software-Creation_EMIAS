@@ -19,9 +19,9 @@ const SPECIALTIES = [
 
 const AddDoctorPage = ({ onBack, onSave }) => {
   const [formData, setFormData] = useState({
-    lastName: '',
-    firstName: '',
-    middleName: '',
+    surname: '',
+    first_name: '',
+    middle_name: '',
     specialty: ''
   });
   const [errors, setErrors] = useState({});
@@ -31,12 +31,12 @@ const AddDoctorPage = ({ onBack, onSave }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Обязательное поле';
+    if (!formData.surname.trim()) {
+      newErrors.surname = 'Обязательное поле';
     }
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'Обязательное поле';
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = 'Обязательное поле';
     }
 
     if (!formData.specialty) {
@@ -80,8 +80,8 @@ const AddDoctorPage = ({ onBack, onSave }) => {
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       setTouched({
-        lastName: true,
-        firstName: true,
+        surname: true,
+        first_name: true,
         specialty: true
       });
       return;
@@ -91,9 +91,9 @@ const AddDoctorPage = ({ onBack, onSave }) => {
 
     try {
       const doctorData = {
-        surname: formData.lastName,
-        first_name: formData.firstName,
-        middle_name: formData.middleName || "",
+        surname: formData.surname,
+        first_name: formData.first_name,
+        middle_name: formData.middle_name || "",
         specialization: formData.specialty,
         description: formData.specialty,
       };
@@ -102,9 +102,9 @@ const AddDoctorPage = ({ onBack, onSave }) => {
       await onSave?.(doctorData);
 
       setFormData({
-        lastName: '',
-        firstName: '',
-        middleName: '',
+        surname: '',
+        first_name: '',
+        middle_name: '',
         specialty: ''
       });
       setTouched({});
@@ -170,22 +170,22 @@ const AddDoctorPage = ({ onBack, onSave }) => {
             </label>
             <input
               type="text"
-              value={formData.lastName}
-              onChange={(e) => handleInputChange('lastName', e.target.value)}
-              onBlur={() => handleBlur('lastName')}
+              value={formData.surname}
+              onChange={(e) => handleInputChange('surname', e.target.value)}
+              onBlur={() => handleBlur('surname')}
               disabled={isSubmitting}
               className={clsx(styles.input, {
-                [styles.inputError]: touched.lastName && errors.lastName
+                [styles.inputError]: touched.surname && errors.surname
               })}
               placeholder="Иванов"
             />
-            {touched.lastName && errors.lastName && (
+            {touched.surname && errors.surname && (
               <motion.span
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={styles.errorText}
               >
-                {errors.lastName}
+                {errors.surname}
               </motion.span>
             )}
           </div>
@@ -197,22 +197,22 @@ const AddDoctorPage = ({ onBack, onSave }) => {
             </label>
             <input
               type="text"
-              value={formData.firstName}
-              onChange={(e) => handleInputChange('firstName', e.target.value)}
-              onBlur={() => handleBlur('firstName')}
+              value={formData.first_name}
+              onChange={(e) => handleInputChange('first_name', e.target.value)}
+              onBlur={() => handleBlur('first_name')}
               disabled={isSubmitting}
               className={clsx(styles.input, {
-                [styles.inputError]: touched.firstName && errors.firstName
+                [styles.inputError]: touched.first_name && errors.first_name
               })}
               placeholder="Иван"
             />
-            {touched.firstName && errors.firstName && (
+            {touched.first_name && errors.first_name && (
               <motion.span
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={styles.errorText}
               >
-                {errors.firstName}
+                {errors.first_name}
               </motion.span>
             )}
           </div>
@@ -224,8 +224,8 @@ const AddDoctorPage = ({ onBack, onSave }) => {
             </label>
             <input
               type="text"
-              value={formData.middleName}
-              onChange={(e) => handleInputChange('middleName', e.target.value)}
+              value={formData.middle_name}
+              onChange={(e) => handleInputChange('middle_name', e.target.value)}
               disabled={isSubmitting}
               className={styles.input}
               placeholder="Иванович"

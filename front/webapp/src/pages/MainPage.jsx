@@ -31,7 +31,7 @@ import styles from './MainPage.module.css';
 import DoctorSelectionPage from "./DoctorSelectionPage";
 import DoctorSchedulePage from './DoctorSchedulePage';
 import AddDoctorPage from './AddDoctorPage';
-import { ALL_DOCTORS } from "../test_data";
+//import { ALL_DOCTORS } from "../test_data";
 import useApi from '../hooks/useApi';
 import AdminDoctorSelectPage from './AdminDoctorSelectPage';
 import AdminAppointmentsPage from './AdminAppointmentsPage';
@@ -56,10 +56,6 @@ const formatAppointmentDateTime = (dateString) => {
   return { date: formattedDate, time: formattedTime };
 };
 
-const getDoctorById = (doctorId) => {
-  const doctor = ALL_DOCTORS.find(d => d.id === doctorId);
-  return doctor || null;
-};
 
 const DOCTORS_DATA = [
   {
@@ -79,7 +75,7 @@ const DOCTORS_DATA = [
   },
 ];
 
-const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, appointments, onAppointmentAdd, onRoleChange }) => {
+const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfileUpdate, appointments, onAppointmentAdd, onRoleChange, setAppointments}) => {
   const [activeTab, setActiveTab] = useState('profile');
 
   const [direction, setDirection] = useState(0);
@@ -107,6 +103,12 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
   const [loadingAppointments, setLoadingAppointments] = useState(false);
 
   const api = useApi();
+
+  const getDoctorById = (doctorId) => {
+    const doctor = doctors.find(d => d.id === doctorId);
+    return doctor || null;
+  };
+
 
   useEffect(() => {
     if (PROFILE_DATA) {
@@ -472,9 +474,10 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
 
 
   const formatDoctorName = (doctor) => {
-    const firstInitial = doctor.firstName ? doctor.firstName.charAt(0) + '.' : '';
-    const middleInitial = doctor.middleName ? doctor.middleName.charAt(0) + '.' : '';
-    return `${doctor.lastName} ${firstInitial} ${middleInitial}`;
+
+    const firstInitial = doctor.first_name ? doctor.first_name.charAt(0) + '.' : '';
+    const middleInitial = doctor.middle_name ? doctor.middle_name.charAt(0) + '.' : '';
+    return `${doctor.surname} ${firstInitial} ${middleInitial}`;
   };
 
   const handlePhoneChange = (value) => {
@@ -518,6 +521,7 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
         <AdminAppointmentsPage
           doctor={selectedAdminDoctor}
           onBack={() => setSelectedAdminDoctor(null)}
+          loadUserAppointments={loadUserAppointments}
         />
       );
     }
@@ -950,7 +954,7 @@ const MainPage = ({ userRole, isAutorized, onLoginClick, PROFILE_DATA, onProfile
                       <div className={styles.historyList}>
                         {userAppointments.map((appointment) => {
                           const doctor = getDoctorById(appointment.doctor_id);
-
+                          console.log(`${doctor.toString()}`)
                           if (!doctor) {
                             return (
                               <motion.div

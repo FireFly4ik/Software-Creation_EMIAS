@@ -130,6 +130,8 @@ const useApi = () => {
   // ==================== DOCTOR ====================
 
   const createDoctor = useCallback(async (doctorData) => {
+
+    alert(JSON.stringify(doctorData));
     return await request('/doctor/', {
       method: 'POST',
       body: JSON.stringify(doctorData),
@@ -188,7 +190,7 @@ const useApi = () => {
   }, [request]);
 
   const getMyAppointments = useCallback(async (userId) => {
-    return await request(`/profile/appointments?user_id=${userId}`, {
+    return await request(`/profile/appointments`, {
       method: 'GET'
     });
   }, [request]);

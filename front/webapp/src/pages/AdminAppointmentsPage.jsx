@@ -12,7 +12,7 @@ import {
 import styles from './AdminAppointmentsPage.module.css';
 import useApi from '../hooks/useApi';
 
-const AdminAppointmentsPage = ({ doctor, onBack }) => {
+const AdminAppointmentsPage = ({ doctor, onBack, loadUserAppointments }) => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('all');
@@ -60,6 +60,8 @@ const AdminAppointmentsPage = ({ doctor, onBack }) => {
     try {
       await api.cancelAppointment(appointment.id);
       await loadAppointments();
+      await loadUserAppointments();
+
       alert('Запись успешно отменена');
     } catch (error) {
       alert(`Ошибка отмены записи: ${error.message}`);

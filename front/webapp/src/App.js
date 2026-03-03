@@ -242,6 +242,7 @@ function App() {
           appointments={appointments}
           onAppointmentAdd={handleAppointmentAdd}
           userRole={profileData?.role}
+          setAppointments={setAppointments}
         />
       )}
     </>
